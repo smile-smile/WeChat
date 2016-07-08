@@ -10,21 +10,28 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.custom.StackLayout;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseTrackAdapter;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.wb.swt.SWTResourceManager;
+
+import com.yc.weichat.util.UIUtil;
 
 public class MainView {
 
@@ -65,6 +72,10 @@ public class MainView {
 	Button btnChat, btnFriend, btnCollect, btnSetting;
 	private Text text_1;
 	private Text text_2;
+	StackLayout sLayout;
+	Composite composite_5;
+	Composite composite_6;
+	Composite composite_12;
 	protected void createContents() {
 		shell = new Shell(SWT.MIN|SWT.CLOSE);
 		shell.setImage(SWTResourceManager.getImage(MainView.class, "/images/icon.jpg"));
@@ -149,14 +160,14 @@ public class MainView {
 		Label lblNewLabel = new Label(composite_3, SWT.SEPARATOR);
 		lblNewLabel.setText("New Label");
 		
-		StackLayout sLayout = new StackLayout();
+		sLayout = new StackLayout();
 		Composite composite_4 = new Composite(sashForm, SWT.NONE);
 		composite_4.setLayout(sLayout);
 		
 		
-		Composite composite_5 = new Composite(composite_4, SWT.NONE);
+		composite_5 = new Composite(composite_4, SWT.NONE);
 		
-		Composite composite_6 = new Composite(composite_4, SWT.NONE);
+		composite_6 = new Composite(composite_4, SWT.NONE);
 		composite_6.setLayout(new FillLayout(SWT.HORIZONTAL));
 		
 		SashForm sashForm_2 = new SashForm(composite_6, SWT.VERTICAL);
@@ -182,11 +193,37 @@ public class MainView {
 		
 		Composite composite_8 = new Composite(sashForm_2, SWT.NONE);
 		
-		ScrolledComposite scrolledComposite_2 = new ScrolledComposite(sashForm_2, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		Label lblNewLabel_2 = new Label(composite_8, SWT.NONE);
+		lblNewLabel_2.setImage(SWTResourceManager.getImage(MainView.class, "/images/face.png"));
+		lblNewLabel_2.setBounds(4, 6, 30, 30);
+		
+		Label lblCollect = new Label(composite_8, SWT.NONE);
+		lblCollect.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				FileDialog fd = new FileDialog(shell);
+				fd.setText("选择文件");
+				fd.setFilterExtensions(new String[]{"*.*"});
+				fd.setFilterNames(new String[]{"*.*"});
+				String path = fd.open();
+			}
+		});
+		lblCollect.setImage(SWTResourceManager.getImage(MainView.class, "/images/222.png"));
+		lblCollect.setBounds(36, 6, 30, 30);
+		
+		Label lblNewLabel_4 = new Label(composite_8, SWT.NONE);
+		lblNewLabel_4.setImage(SWTResourceManager.getImage(MainView.class, "/images/cut.png"));
+		lblNewLabel_4.setBounds(68, 6, 30, 30);
+		
+		Label lblNewLabel_5 = new Label(composite_8, SWT.NONE);
+		lblNewLabel_5.setImage(SWTResourceManager.getImage(MainView.class, "/images/video.png"));
+		lblNewLabel_5.setBounds(100, 6, 30, 30);
+		
+		ScrolledComposite scrolledComposite_2 = new ScrolledComposite(sashForm_2, SWT.BORDER | SWT.V_SCROLL);
 		scrolledComposite_2.setExpandHorizontal(true);
 		scrolledComposite_2.setExpandVertical(true);
 		
-		Composite composite_11 = new Composite(scrolledComposite_2, SWT.H_SCROLL);
+		Composite composite_11 = new Composite(scrolledComposite_2, SWT.NONE);
 		composite_11.setLayout(new FillLayout(SWT.HORIZONTAL));
 		
 		text_2 = new Text(composite_11, SWT.BORDER | SWT.WRAP | SWT.H_SCROLL | SWT.CANCEL);
@@ -196,13 +233,115 @@ public class MainView {
 		Composite composite_9 = new Composite(sashForm_2, SWT.NONE);
 		
 		Button btnSend = new Button(composite_9, SWT.NONE);
-		btnSend.setBounds(671, 10, 114, 34);
-		btnSend.setText("New Button");
+		btnSend.setBounds(685, 0, 100, 40);
+		btnSend.setImage(changeImage("images/send.png", 100, 40));
 		sashForm_2.setWeights(new int[] {5, 60, 5, 25, 5});
 		sashForm.setWeights(new int[] {5, 25, 1, 63});
-//		btnSend.setImage(changeImage(", width, height));
+		addSendEvent(btnSend);
+		
+		
+		//堆栈布局第二块面板设计   采用绝对布局
+		composite_12 = new Composite(composite_4, SWT.NONE);
+		
+		Label lbl_headportait = new Label(composite_12, SWT.NONE);
+		lbl_headportait.setAlignment(SWT.CENTER);
+		lbl_headportait.setImage(SWTResourceManager.getImage(MainView.class, "/images/people1.png"));
+		lbl_headportait.setBounds(306, 196, 200,200);
+		
+		Label lbl_name = new Label(composite_12, SWT.NONE);
+		lbl_name.setForeground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
+		lbl_name.setAlignment(SWT.CENTER);
+		lbl_name.setFont(SWTResourceManager.getFont("Microsoft YaHei UI", 13, SWT.NORMAL));
+		lbl_name.setBounds(287, 424, 250,30);
+		lbl_name.setText("有识之士");
+		
+		Label lbl_motto = new Label(composite_12, SWT.NONE);
+		lbl_motto.setAlignment(SWT.CENTER);
+		lbl_motto.setEnabled(false);
+		lbl_motto.setBounds(287, 474, 250,30);
+		lbl_motto.setText("“慎独”");
+		
+		Label lbl_remark = new Label(composite_12, SWT.NONE);
+		lbl_remark.setFont(SWTResourceManager.getFont("Microsoft Sans Serif", 11, SWT.NORMAL));
+		lbl_remark.setAlignment(SWT.CENTER);
+		lbl_remark.setEnabled(false);
+		lbl_remark.setBounds(295, 510, 65, 30);
+		lbl_remark.setText("备注");
+		
+		Label lbl_remarkname = new Label(composite_12, SWT.NONE);
+		lbl_remarkname.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
+		lbl_remarkname.setAlignment(SWT.CENTER);
+		lbl_remarkname.setBounds(366, 510,200,30);
+		lbl_remarkname.setText("陈谭军");
+		
+		Label lbl_weixinnumber = new Label(composite_12, SWT.NONE);
+		lbl_weixinnumber.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
+		lbl_weixinnumber.setAlignment(SWT.CENTER);
+		lbl_weixinnumber.setEnabled(false);
+		lbl_weixinnumber.setBounds(295, 546, 65, 30);
+		lbl_weixinnumber.setText("微信号");
+		
+		Label lbl_number = new Label(composite_12, SWT.NONE);
+		lbl_number.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
+		lbl_number.setAlignment(SWT.CENTER);
+		lbl_number.setBounds(366, 546,200,30);
+		lbl_number.setText("clj22222jcl");
+		
+		Label lbl_district = new Label(composite_12, SWT.NONE);
+		lbl_district.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
+		lbl_district.setAlignment(SWT.CENTER);
+		lbl_district.setEnabled(false);
+		lbl_district.setBounds(295, 582,65, 30);
+		lbl_district.setText("地区");
+		
+		Label lbl__districtname = new Label(composite_12, SWT.NONE);
+		lbl__districtname.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
+		lbl__districtname.setAlignment(SWT.CENTER);
+		lbl__districtname.setBounds(366, 582, 200,30);
+		lbl__districtname.setText("湖南 衡阳");
+		
+		Button btn_startchat = new Button(composite_12, SWT.NONE);
+		btn_startchat.setBounds(287, 640, 250, 46);
+		btn_startchat.setText("发消息");
+		
+		
+		showComposite(composite_6);
+	}
 
-		sLayout.topControl = composite_6;
+	private void showComposite(Composite composite) {
+		sLayout.topControl=composite;
+		composite_5.setVisible(false);
+		composite_6.setVisible(false);
+		composite_12.setVisible(false);
+		composite.setVisible(true);	
+	}
+	
+	public void addSendEvent(final Button btn) {
+		btn.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				Button b = (Button)e.widget;
+				b.setImage(SWTResourceManager.getImage(UIUtil.class, "/images/press_send.png"));
+			}
+			@Override
+			public void mouseUp(MouseEvent e) {
+				Button b = (Button)e.widget;
+				b.setImage(SWTResourceManager.getImage(UIUtil.class, "/images/send.png"));
+			}
+		});
+		btn.addMouseTrackListener(new MouseTrackAdapter() {
+			@Override//放上
+			public void mouseHover(MouseEvent e) {
+				Button b = (Button)e.widget;
+				b.setImage(SWTResourceManager.getImage(UIUtil.class, "/images/press_send.png"));
+			}
+			@Override//移开
+			public void mouseExit(MouseEvent e) {
+				Button b = (Button)e.widget;
+				b.setImage(SWTResourceManager.getImage(UIUtil.class, "/images/send.png"));
+			}
+			
+		});
 	}
 
 	private void addPressEvent(Button button, String path) {

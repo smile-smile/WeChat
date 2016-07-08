@@ -27,9 +27,6 @@ public class Register {
 	private Text textEmail;
 	private Text textName;
 	private Text textNick;
-	private Text textYear;
-	private Text textMonth;
-	private Text textDay;
 
 	/**
 	 * Launch the application.
@@ -176,26 +173,8 @@ public class Register {
 		label_10.setBounds(66, 341, 72, 24);
 		label_10.setText("出生日期");
 		
-		textYear = new Text(composite22, SWT.BORDER);
-		textYear.setBounds(162, 335, 60, 30);
-		
-		Label label_11 = new Label(composite22, SWT.NONE);
-		label_11.setBounds(229, 338, 18, 24);
-		label_11.setText("年");
-		
-		textMonth = new Text(composite22, SWT.BORDER);
-		textMonth.setBounds(253, 335, 60, 30);
-		
-		Label label_12 = new Label(composite22, SWT.NONE);
-		label_12.setText("月");
-		label_12.setBounds(320, 338, 18, 24);
-		
-		textDay = new Text(composite22, SWT.BORDER);
-		textDay.setBounds(347, 335, 60, 30);
-		
-		Label label_13 = new Label(composite22, SWT.NONE);
-		label_13.setText("日");
-		label_13.setBounds(412, 338, 18, 24);
+		DateTime dateTime = new DateTime(composite22, SWT.BORDER);
+		dateTime.setBounds(162, 332, 246, 33);
 		sashForm.setWeights(new int[] {1, 9});
 		
 		sLayout.topControl = composite21;

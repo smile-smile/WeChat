@@ -134,6 +134,7 @@ public class Login {
 				Rectangle r = label.getBounds();
 				if(e.x >=0 && e.x <= r.width && e.y >=0 && e.y <= r.height) {
 					lblLogin.getShell().dispose();
+					new MainView().open();
 				}
 			}
 		});
