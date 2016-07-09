@@ -23,6 +23,8 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.custom.StackLayout;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseTrackAdapter;
@@ -79,7 +81,7 @@ public class MainView {
 	protected void createContents() {
 		shell = new Shell(SWT.MIN|SWT.CLOSE);
 		shell.setImage(SWTResourceManager.getImage(MainView.class, "/images/icon.jpg"));
-		shell.setSize(1200, 900);
+		shell.setSize(1150, 800);
 		winCenter(shell);
 		shell.setText("微信");
 		shell.setLayout(new FillLayout(SWT.HORIZONTAL));
@@ -95,7 +97,7 @@ public class MainView {
 		
 		Button btnNewButton = new Button(composite_1, SWT.NONE);
 		btnNewButton.setBounds(0, 0, 60, 60);
-		btnNewButton.setText("New Button");
+		btnNewButton.setImage(changeImage("images/not_pic.jpg", 60, 60));
 		
 		btnChat = new Button(composite_1, SWT.NONE);
 		btnChat.setBounds(-1, 66, 60, 60);
@@ -114,7 +116,7 @@ public class MainView {
 		addPressEvent(btnCollect, "images/press_collect.png");
 		
 		btnSetting = new Button(composite_1, SWT.NONE);
-		btnSetting.setBounds(0, 784, 60, 60);
+		btnSetting.setBounds(0, 700, 60, 60);
 		btnSetting.setImage(image5);
 		//addPressEvent(btnFriend, "images/press_setting.png");
 		
@@ -127,7 +129,32 @@ public class MainView {
 		Composite composite_21 = new Composite(sashForm_1, SWT.NONE);
 		
 		text = new Text(composite_21, SWT.BORDER);
+		text.setForeground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
+		text.setText("请输入关键字");
 		text.setBounds(10, 20, 239, 30);
+		
+		//文本焦点事件  提示语显示与关闭
+		text.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusGained(FocusEvent e) {
+				 Text text=(Text)e.widget;
+				 if("请输入关键字".equals(text.getText()))
+				   {
+					 text.setText("");
+				   }
+				 text.setForeground(new Color(shell.getDisplay(), 0,0,0));
+			}
+			@Override
+			public void focusLost(FocusEvent e) {
+				 Text text=(Text)e.widget;
+				 if("".equals(text.getText().trim()))
+				 {
+					 text.setText("请输入关键字");
+					 text.setForeground(new Color(shell.getDisplay(), 200,200,200));
+				 }
+			}
+		});
+
 		
 		Button btnNewButton_5 = new Button(composite_21, SWT.NONE);
 		btnNewButton_5.setBounds(260, 15, 40, 40);
@@ -233,7 +260,7 @@ public class MainView {
 		Composite composite_9 = new Composite(sashForm_2, SWT.NONE);
 		
 		Button btnSend = new Button(composite_9, SWT.NONE);
-		btnSend.setBounds(685, 0, 100, 40);
+		btnSend.setBounds(652, 0, 100, 40);
 		btnSend.setImage(changeImage("images/send.png", 100, 40));
 		sashForm_2.setWeights(new int[] {5, 60, 5, 25, 5});
 		sashForm.setWeights(new int[] {5, 25, 1, 63});

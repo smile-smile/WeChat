@@ -4,10 +4,10 @@ package com.yc.weichat.view;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseTrackAdapter;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.SWT;
@@ -17,6 +17,9 @@ import static com.yc.weichat.util.UIUtil.*;
 
 import org.eclipse.wb.swt.SWTResourceManager;
 
+import com.yc.weichat.entity.Account;
+import com.yc.weichat.service.AccountService;
+import com.yc.weichat.service.impl.AccountServiceimpl;
 import com.yc.weichat.util.UIUtil;
 
 public class Login {
@@ -30,6 +33,7 @@ public class Login {
 	private Label labRegister;
 	private Label label;
 	private Label label_1;
+	private Account account;
 
 	/**
 	 * Launch the application.
@@ -87,19 +91,19 @@ public class Login {
 		label = new Label(shell, SWT.NONE);
 		label.setFont(SWTResourceManager.getFont("Microsoft YaHei UI", 11, SWT.NORMAL));
 		label.setBounds(45, 300, 80, 40);
-		label.setText("手机号");
+		label.setText("微信号");
 		
 		label_1 = new Label(shell, SWT.NONE);
 		label_1.setFont(SWTResourceManager.getFont("Microsoft YaHei UI", 11, SWT.NORMAL));
 		label_1.setBounds(45, 370, 80, 40);
 		label_1.setText("密   码");
 		
-		txtAccount = new Text(shell, SWT.BORDER|SWT.CENTER);
+		txtAccount = new Text(shell, SWT.BORDER);
 		txtAccount.setBackground(SWTResourceManager.getColor(SWT.COLOR_INFO_BACKGROUND));
 		txtAccount.setFont(SWTResourceManager.getFont("Microsoft YaHei UI", 10, SWT.NORMAL));
 		txtAccount.setBounds(142, 300, 235, 40);
 		
-		txtPassword = new Text(shell, SWT.BORDER|SWT.PASSWORD|SWT.CENTER);
+		txtPassword = new Text(shell, SWT.BORDER | SWT.PASSWORD);
 		txtPassword.setBackground(SWTResourceManager.getColor(SWT.COLOR_INFO_BACKGROUND));
 		txtPassword.setFont(SWTResourceManager.getFont("Microsoft YaHei UI", 10, SWT.NORMAL));
 		txtPassword.setBounds(142, 370, 235, 40);
@@ -133,8 +137,25 @@ public class Login {
 				Label label = (Label)e.widget;
 				Rectangle r = label.getBounds();
 				if(e.x >=0 && e.x <= r.width && e.y >=0 && e.y <= r.height) {
-					lblLogin.getShell().dispose();
-					new MainView().open();
+					String id = txtAccount.getText().trim();
+					String pwd = txtPassword.getText().trim();
+					MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION);
+					mb.setText("提示");
+					if(id == "" || pwd == "") {
+						mb.setMessage("微信号或密码不能为空");
+						mb.open();
+					}
+					AccountService as = new AccountServiceimpl();
+					account =as.login(id, pwd);
+					if(account != null) {
+						UIUtil.user = (Account)account;
+						shell.dispose();
+						new MainView().open();
+					} else {
+						mb.setMessage("微信号或密码错误");
+						mb.open();
+					}
+					
 				}
 			}
 		});

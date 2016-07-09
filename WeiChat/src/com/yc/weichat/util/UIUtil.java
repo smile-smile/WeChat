@@ -1,28 +1,24 @@
 package com.yc.weichat.util;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.MouseTrackAdapter;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
 
-import com.yc.weichat.view.Register;
 
 public class UIUtil {
 
+	public static Object user;
 	/**
 	 * 图片自适用大小
 	 * @param imageClassPath
@@ -31,9 +27,24 @@ public class UIUtil {
 	 * @return
 	 */
 	public static Image changeImage(String imageClassPath, int width, int height) {
+		//判断文件的路径是相对还是绝对
+		//window的绝对路径是以盘符号开始，Linux的绝对路径是以“/”开始
+		//imageClassPath.charAt(0) == '/' || imageClassPath.charAt(1) == ':'判断绝对路径
 		InputStream in = UIUtil.class.getClassLoader().getResourceAsStream(imageClassPath);
-		ImageData imageData = new ImageData(in).scaledTo(width, height);
-		Image image = new Image(null, imageData);
+		if(in == null) {
+			try {
+				in = new FileInputStream(imageClassPath);
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return changeImage(in, width, height);
+	}
+	
+	public static Image changeImage(InputStream in, int width, int height) {
+		ImageData idata = new ImageData(in).scaledTo(width, height);
+		Image image = new Image(null, idata);
 		return image;
 	}
 	

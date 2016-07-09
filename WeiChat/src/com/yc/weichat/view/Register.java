@@ -99,14 +99,14 @@ public class Register {
 		label1.setText("微信号");
 		label1.setBounds(66, 145, 90, 24);
 		
-		textAccount = new Text(composite21, SWT.BORDER | SWT.CENTER);
+		textAccount = new Text(composite21, SWT.BORDER);
 		textAccount.setBounds(162, 142, 246, 30);
 		
 		Label label_2 = new Label(composite21, SWT.NONE);
 		label_2.setText("密   码");
 		label_2.setBounds(66, 215, 90, 24);
 		
-		textPassword = new Text(composite21, SWT.BORDER | SWT.PASSWORD | SWT.CENTER);
+		textPassword = new Text(composite21, SWT.BORDER | SWT.PASSWORD);
 		textPassword.setBounds(162, 212, 246, 30);
 		
 		Label label_9 = new Label(composite21, SWT.NONE);
@@ -117,7 +117,7 @@ public class Register {
 		label_3.setText("邮   箱");
 		label_3.setBounds(66, 355, 90, 24);
 		
-		textEmail = new Text(composite21, SWT.BORDER | SWT.CENTER);
+		textEmail = new Text(composite21, SWT.BORDER);
 		textEmail.setBounds(162, 352, 246, 30);
 		
 		Label lblNext = new Label(composite21, SWT.CENTER);
@@ -128,30 +128,38 @@ public class Register {
 		lblNext.setBounds(155, 434, 220, 40);
 		addNextEvent(lblNext);
 		
+		sLayout.topControl = composite21;
+		composite21.setVisible(true);
+		
+		
+		
+		textPhone = new Text(composite21, SWT.BORDER);
+		textPhone.setBounds(162, 282, 246, 30);
+		
 		composite22 = new Composite(composite2, SWT.NONE);
 		
 		Label label_5 = new Label(composite22, SWT.NONE);
 		label_5.setText("选填信息");
 		label_5.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
-		label_5.setBounds(220, 67, 90, 24);
+		label_5.setBounds(215, 22, 90, 24);
 		
 		Label label_6 = new Label(composite22, SWT.NONE);
-		label_6.setText("姓名");
-		label_6.setBounds(66, 141, 90, 24);
+		label_6.setText("名字");
+		label_6.setBounds(67, 258, 90, 24);
 		
-		textName = new Text(composite22, SWT.BORDER | SWT.CENTER);
-		textName.setBounds(162, 135, 246, 30);
+		textName = new Text(composite22, SWT.BORDER);
+		textName.setBounds(163, 252, 246, 30);
 		
 		Label label_7 = new Label(composite22, SWT.NONE);
-		label_7.setText("昵称");
-		label_7.setBounds(66, 209, 90, 24);
+		label_7.setText("地区");
+		label_7.setBounds(67, 309, 90, 24);
 		
-		textNick = new Text(composite22, SWT.BORDER | SWT.CENTER);
-		textNick.setBounds(162, 206, 246, 30);
+		textNick = new Text(composite22, SWT.BORDER);
+		textNick.setBounds(163, 306, 246, 30);
 		
 		Label label_8 = new Label(composite22, SWT.NONE);
 		label_8.setText("性别");
-		label_8.setBounds(66, 273, 90, 24);
+		label_8.setBounds(67, 358, 90, 24);
 		
 		Label lblRigister = new Label(composite22, SWT.CENTER);
 		lblRigister.setText("注册");
@@ -162,28 +170,22 @@ public class Register {
 		addRegisterEvent(lblRigister);
 		
 		Button btnMan = new Button(composite22, SWT.RADIO);
-		btnMan.setBounds(193, 273, 80, 24);
+		btnMan.setBounds(194, 358, 80, 24);
 		btnMan.setText("男");
 		
 		Button btnWoman = new Button(composite22, SWT.RADIO);
 		btnWoman.setText("女");
-		btnWoman.setBounds(304, 273, 80, 24);
+		btnWoman.setBounds(305, 358, 80, 24);
 		
-		Label label_10 = new Label(composite22, SWT.NONE);
-		label_10.setBounds(66, 341, 72, 24);
-		label_10.setText("出生日期");
+		Label lblPic = new Label(composite22, SWT.NONE);
+		lblPic.setAlignment(SWT.CENTER);
+		lblPic.setBounds(205, 68, 100, 100);
+		lblPic.setImage(changeImage("images/not_pic.jpg", 100, 100));
 		
-		DateTime dateTime = new DateTime(composite22, SWT.BORDER);
-		dateTime.setBounds(162, 332, 246, 33);
+		Button btnNewButton = new Button(composite22, SWT.NONE);
+		btnNewButton.setBounds(205, 189, 100, 34);
+		btnNewButton.setText("上传图片");
 		sashForm.setWeights(new int[] {1, 9});
-		
-		sLayout.topControl = composite21;
-		composite21.setVisible(true);
-		
-		
-		
-		textPhone = new Text(composite21, SWT.BORDER | SWT.CENTER);
-		textPhone.setBounds(162, 282, 246, 30);
 
 	}
 
