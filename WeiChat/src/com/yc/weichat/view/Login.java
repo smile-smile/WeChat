@@ -192,8 +192,6 @@ public class Login {
 				window.open();
 			}
 			
-			
-			
 		});
 		lblRegister.addMouseTrackListener(new MouseTrackAdapter() {
 			@Override//放上

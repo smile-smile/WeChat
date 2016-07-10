@@ -17,6 +17,8 @@ alter table Account modify phone not null;
 --alter table Account add pic blob;
 --alter table Account drop column birthday;
 
+select * from account;
+
 create table Friends(
 	myselfId varchar2(20),
 	friendId varchar2(20),
@@ -36,6 +38,12 @@ create table Groups(
 	remark2 varchar2(20),
 	remark3 varchar2(20)
 );
+
+alter table Groups rename column remark1 to adminName;
+alter table Groups rename column remark2 to remark1;
+alter table Groups rename column remark3 to remark2;
+alter table Groups add constraint fk_groups_account_adminName foreign key(adminName) references Account(userId)
+
 
 select * from Groups;
 

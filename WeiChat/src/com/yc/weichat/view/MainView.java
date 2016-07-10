@@ -33,12 +33,15 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.wb.swt.SWTResourceManager;
 
+import com.yc.weichat.entity.Account;
+import com.yc.weichat.service.AccountService;
 import com.yc.weichat.util.UIUtil;
 
 public class MainView {
 
 	protected Shell shell;
 	private Text text;
+	private Account acc;
 
 	/**
 	 * Launch the application.
@@ -79,6 +82,12 @@ public class MainView {
 	Composite composite_6;
 	Composite composite_12;
 	protected void createContents() {
+		try {
+			acc = ((Account)UIUtil.user).clone();
+		} catch (CloneNotSupportedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		shell = new Shell(SWT.MIN|SWT.CLOSE);
 		shell.setImage(SWTResourceManager.getImage(MainView.class, "/images/icon.jpg"));
 		shell.setSize(1150, 800);
@@ -98,6 +107,9 @@ public class MainView {
 		Button btnNewButton = new Button(composite_1, SWT.NONE);
 		btnNewButton.setBounds(0, 0, 60, 60);
 		btnNewButton.setImage(changeImage("images/not_pic.jpg", 60, 60));
+		if(acc.getPic() != null) {
+			btnNewButton.setImage(changeImage(acc.getPic(), 60, 60));
+		}
 		
 		btnChat = new Button(composite_1, SWT.NONE);
 		btnChat.setBounds(-1, 66, 60, 60);
@@ -161,17 +173,22 @@ public class MainView {
 		Image image6 = changeImage("images/add.png", 60, 60);
 		btnNewButton_5.setImage(image6);
 		
-		ScrolledComposite scrolledComposite = new ScrolledComposite(sashForm_1, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		ScrolledComposite scrolledComposite = new ScrolledComposite(sashForm_1, SWT.BORDER | SWT.V_SCROLL);
 		scrolledComposite.setExpandHorizontal(true);
 		scrolledComposite.setExpandVertical(true);
 		
 		Composite composite = new Composite(scrolledComposite, SWT.NONE);
 		composite.setLayout(new RowLayout(SWT.VERTICAL));
 		
-		List<Label> list = new ArrayList<Label>();
+//		Button btnNewButton_1 = new Button(composite, SWT.NONE);
+//		btnNewButton_1.setLayoutData(new RowData(268, 80));
+//		btnNewButton_1.setText("New Button");
+		
+		List<Button> list = new ArrayList<Button>();
 		for(int i=0; i<100; i++) {
-			Label l = new Label(composite, SWT.NONE);
+			Button l = new Button(composite, SWT.NONE);
 			l.setText("AAA");
+			
 			list.add(l);
 		}
 		

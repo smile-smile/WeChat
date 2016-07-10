@@ -34,5 +34,10 @@ public class AccountServiceimpl implements AccountService{
 		return account;
 		
 	}
-
+	@Override
+	public boolean register(Account acc) {
+		acc.setPassword(Encrypt.md5AndSha(acc.getPassword()));
+		return loginDao.updateAccount(acc)>0;
+	}
+	
 }

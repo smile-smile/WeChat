@@ -2,7 +2,7 @@ package com.yc.weichat.entity;
 
 import java.io.InputStream;
 
-public class Account {
+public class Account implements Cloneable {
 	private String userId;
 	private String password;
 	private String phone;
@@ -65,6 +65,10 @@ public class Account {
 				+ ", phone=" + phone + ", email=" + email + ", name=" + name
 				+ ", address=" + address + ", sex=" + sex + ", pic=" + pic
 				+ "]";
+	}
+	@Override
+	public Account clone() throws CloneNotSupportedException {
+		return (Account)super.clone();
 	}
 	
 	

@@ -2,8 +2,16 @@ package com.yc.weichat.view;
 
 import static com.yc.weichat.util.UIUtil.*;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+
+import javax.rmi.CORBA.Stub;
+
+import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
@@ -12,12 +20,18 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.custom.StackLayout;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.widgets.DateTime;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+
+import com.yc.weichat.entity.Account;
+import com.yc.weichat.service.AccountService;
+import com.yc.weichat.service.impl.AccountServiceimpl;
 
 public class Register {
 
@@ -26,7 +40,9 @@ public class Register {
 	private Text textPassword;
 	private Text textEmail;
 	private Text textName;
-	private Text textNick;
+	private Text textAddress;
+	private Account acc;
+	Button btnMan, btnWoman;
 
 	/**
 	 * Launch the application.
@@ -63,6 +79,7 @@ public class Register {
 	Composite composite21, composite22;
 	private Text textPhone;
 	protected void createContents() {
+		acc = new Account();
 		shell = new Shell(Display.getDefault(), SWT.NONE);
 		shell.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_BACKGROUND));
 		addMoveEvent(shell);
@@ -154,8 +171,8 @@ public class Register {
 		label_7.setText("地区");
 		label_7.setBounds(67, 309, 90, 24);
 		
-		textNick = new Text(composite22, SWT.BORDER);
-		textNick.setBounds(163, 306, 246, 30);
+		textAddress = new Text(composite22, SWT.BORDER);
+		textAddress.setBounds(163, 306, 246, 30);
 		
 		Label label_8 = new Label(composite22, SWT.NONE);
 		label_8.setText("性别");
@@ -169,22 +186,58 @@ public class Register {
 		lblRigister.setBounds(155, 434, 220, 40);
 		addRegisterEvent(lblRigister);
 		
-		Button btnMan = new Button(composite22, SWT.RADIO);
+		btnMan = new Button(composite22, SWT.RADIO);
+		btnMan.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				acc.setSex("男");
+			}
+		});
 		btnMan.setBounds(194, 358, 80, 24);
 		btnMan.setText("男");
 		
-		Button btnWoman = new Button(composite22, SWT.RADIO);
+		btnWoman = new Button(composite22, SWT.RADIO);
+		btnWoman.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				acc.setSex("女");
+			}
+		});
 		btnWoman.setText("女");
 		btnWoman.setBounds(305, 358, 80, 24);
 		
 		Label lblPic = new Label(composite22, SWT.NONE);
 		lblPic.setAlignment(SWT.CENTER);
 		lblPic.setBounds(205, 68, 100, 100);
+		
 		lblPic.setImage(changeImage("images/not_pic.jpg", 100, 100));
 		
-		Button btnNewButton = new Button(composite22, SWT.NONE);
-		btnNewButton.setBounds(205, 189, 100, 34);
-		btnNewButton.setText("上传图片");
+		
+		
+		Button btnImportPic = new Button(composite22, SWT.NONE);
+		btnImportPic.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				FileDialog fileDialog = new FileDialog(shell);
+				fileDialog.setText("打开图片");
+				fileDialog.setFilterExtensions(new String[]{"*.jpg", "*.png", "*.gif"});
+				fileDialog.setFilterNames(new String[]{"*.jpg", "*.png", "*.gif"});
+				String picPath = fileDialog.open();
+				if(picPath != null) {
+					try {
+						InputStream in = new FileInputStream(picPath);
+						acc.setPic(in);
+						lblPic.setImage(changeImage(picPath, 100, 100));
+					} catch (FileNotFoundException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					
+				}  
+			}
+		});
+		btnImportPic.setBounds(205, 189, 100, 34);
+		btnImportPic.setText("上传图片");
 		sashForm.setWeights(new int[] {1, 9});
 
 	}
@@ -200,7 +253,11 @@ public class Register {
 					mb.setText("提示");
 					mb.setMessage("信息不能为空");
 					mb.open();
-					return;
+				} else {
+					acc.setUserId(textAccount.getText().trim());
+					acc.setPassword(textPassword.getText().trim());
+					acc.setPhone(textPhone.getText().trim());
+					acc.setEmail(textEmail.getText().trim());
 				}
 			}
 
@@ -229,10 +286,40 @@ public class Register {
 				Label label = (Label)e.widget;
 				Rectangle r = label.getBounds();
 				if(e.x >=0 && e.x <= r.width && e.y >=0 && e.y <= r.height) {
+					AccountService as = new AccountServiceimpl();
+					MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION);
+					mb.setText("提示");
+					if(as.register(acc)) {
+						mb.setMessage("注册成功");
+						mb.open();
+					} else {
+						mb.setMessage("注册失败，该微信号已存在或该手机号已被注册");
+						mb.open();
+					}
 					lblRegister.getShell().dispose();
+					
 				}
 			}
-			
+
+			@Override
+			public void mouseDown(MouseEvent e) {
+				String name = textName.getText().trim();
+				String address = textAddress.getText().trim();
+				if(name == "") {
+					acc.setName(null);
+				} else {
+					acc.setName(name);
+				}
+				if(address == "") {
+					acc.setAddress(null);
+				} else {
+					acc.setAddress(address);
+				}
+				if(btnMan.getSelection() == false && btnWoman.getSelection() == false) {
+					acc.setSex(null);
+				}
+				
+			}
 		});
 	}
 }
