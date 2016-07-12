@@ -31,6 +31,16 @@ create table Friends(
 alter table Friends add constraint fk_friend_account_myselfId foreign key(myselfId) references Account(userId);
 alter table Friends add constraint fk_friend_account_friendId foreign key(friendId) references Account(userId);
 
+insert into Friends values('yc', 'b', null, null, null, null);
+insert into Friends values('yc', 'c', null, null, null, null);
+insert into Friends values('yc', 'd', null, null, null, null);
+insert into Friends values('yc', 'e', null, null, null, null);
+insert into Friends values('yc', 'f', null, null, null, null);
+insert into Friends values('yc', 'admin', null, null, null, null);
+
+insert into Friends values('b', 'yc', null, null, null, null);
+
+
 create table Groups(
 	groupId varchar2(20) primary key,
 	name varchar2(20) not null,
@@ -38,6 +48,8 @@ create table Groups(
 	remark2 varchar2(20),
 	remark3 varchar2(20)
 );
+
+select * from friends;
 
 alter table Groups rename column remark1 to adminName;
 alter table Groups rename column remark2 to remark1;
@@ -63,6 +75,7 @@ select * from user_tables;
 
 insert into ACCOUNT values ('admin', '6f9b0a55df8ac28564cb9f63a10be8af6ab3f7c2', 
 '18216026876', '11987688@qq.com', 'kui', '湖南长沙', '男', null, null, null, null);
+
 
 
 drop table Relation;

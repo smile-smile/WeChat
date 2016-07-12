@@ -5,19 +5,20 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-import org.apache.logging.log4j.core.pattern.AbstractStyleNameConverter.Magenta;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.ui.internal.tweaklets.AllowGrabFocus;
+
+
+
+
+import com.yc.weichat.util.CloseUtil;
 
 
 public class MyChannel implements Runnable {
 	
 	private DataInputStream dis;
 	private DataOutputStream dos;
-	private String id;
+	private String myId, otherId;
 	private boolean isRunning = true;
-	private boolean isConnect = true;
-	private boolean isGroup;
+	private String chatWays;
 	
     public MyChannel() {
 	}
@@ -26,10 +27,11 @@ public class MyChannel implements Runnable {
 		try {
 			dis = new DataInputStream(socket.getInputStream());
 			dos = new DataOutputStream(socket.getOutputStream());
-			isGroup = dis.readBoolean();
-			id = dis.readUTF();
+			myId = dis.readUTF();
 		} catch (IOException e) {
-			e.printStackTrace();
+			isRunning = false;
+			CloseUtil.closeAll(dis, dos);
+//			e.printStackTrace();
 		}
 	}
 	
@@ -41,55 +43,79 @@ public class MyChannel implements Runnable {
 		String msg = "";
 		try {
 			msg = dis.readUTF();
-			isConnect = dis.readBoolean();
-			if(isConnect == false) {
-				dis.close();
-				dos.close();
-				Server.all.remove(this);
-			}
+			System.out.println(msg);
 		} catch (IOException e) {
-			e.printStackTrace();
+			isRunning = false;
+			Server.all.remove(this);
+			CloseUtil.closeAll(dis);
+			//e.printStackTrace();
 		}
 		return msg;
 	}
 	
-	private String sendMsg(String msg) {
+	
+
+	/**
+	 * 发送信息
+	 * @param msg
+	 * @return
+	 */
+	private void sendMsg(String msg) {
 		if(msg != null && msg != "") {
 			try {
 				dos.writeUTF(msg);
 				dos.flush();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				isRunning = false;
+				Server.all.remove(this);
+				CloseUtil.closeAll(dos);
+				//e.printStackTrace();
 			}
 		}
-		return msg;
 	}
 	
-	private void sendOthers(String msg, boolean isGroup) {
-		if(isGroup) {
-			for(MyChannel other : Server.all) {
-				other.sendMsg(msg);
-			}
-		} else {
-			for(MyChannel other : Server.all) {
-				
-			}
-		}
+//	private void sendOthers(String msg, String chatWays) {
+//		if(chatWays.equals(Properties.PRIVATE_CHAT)) {
+//			for(MyChannel other : Server.all) {
+//				if(this.otherId.equals(other.myId)) {
+//					other.sendMsg(msg);
+//				}
+//			}
+//		} else {
+//			
+//		}
+//		
+//	}
+	
+	private void dealMsg(String msg) {
+		if(msg.startsWith(Properties.OTHER_ID)) {
+			otherId = msg.substring(Properties.OTHER_ID.length());
+		} else if(msg.startsWith(Properties.PRIVATE_CHAT)) {
+			privateChat(msg);
+		} else if(msg.startsWith(Properties.GROUP_CHAT)) {
+			groupChat(msg);
+		} 
 		
 	}
 	
 
+	private void groupChat(String msg) {
+	// TODO Auto-generated method stub
+	
+	}
+
+	private void privateChat(String msg) {
+		for(MyChannel other : Server.all) {
+			if(this.otherId.equals(other.myId)) {
+				other.sendMsg(msg.concat("#" + myId));
+			}
+		}
+	}
+
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
 		while(isRunning) {
-			if(isConnect) {
-				sendOthers(receiveMsg(), isGroup);
-			} else {
-				
-			}
-			
+			dealMsg(receiveMsg());
 		}
 	}
 

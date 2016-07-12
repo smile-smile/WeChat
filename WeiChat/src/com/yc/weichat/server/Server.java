@@ -18,9 +18,12 @@ public class Server {
 	private void connect() {
 		try {
 			ServerSocket server = new ServerSocket(Properties.PORT);
-			Socket socket = server.accept();
-			MyChannel channel = new MyChannel(socket);
-			all.add(channel);
+			while(true) {
+				Socket socket = server.accept();
+				MyChannel channel = new MyChannel(socket);
+				all.add(channel);
+				new Thread(channel).start();
+			}
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

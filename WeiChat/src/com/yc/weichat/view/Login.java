@@ -13,6 +13,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Text;
 
+import static com.yc.weichat.util.ClientUtil.*;
 import static com.yc.weichat.util.UIUtil.*;
 
 import org.eclipse.wb.swt.SWTResourceManager;
@@ -144,16 +145,20 @@ public class Login {
 					if(id == "" || pwd == "") {
 						mb.setMessage("微信号或密码不能为空");
 						mb.open();
+						return;
 					}
 					AccountService as = new AccountServiceimpl();
 					account =as.login(id, pwd);
 					if(account != null) {
 						UIUtil.user = (Account)account;
 						shell.dispose();
+						connect();
+						sendMsg(id);
 						new MainView().open();
 					} else {
 						mb.setMessage("微信号或密码错误");
 						mb.open();
+						return;
 					}
 					
 				}

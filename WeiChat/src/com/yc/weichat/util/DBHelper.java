@@ -251,8 +251,15 @@ public class DBHelper {
 			results = new ArrayList<Map<String, Object>>();
 			while(rs.next()) {
 				Map<String, Object> record = new HashMap<String, Object>();
+
 				for(int i=1; i<=columnCount; i++) {
-					record.put(rsmd.getColumnName(i).toLowerCase(), rs.getObject(i));
+					Object obj = rs.getObject(i);
+					if(obj instanceof BLOB) {
+						BLOB blob = (BLOB) rs.getBlob(i);
+						obj = blob.getBinaryStream();
+					}
+					record.put(rsmd.getColumnName(i).toLowerCase(), obj);
+//					record.put(rsmd.getColumnName(i).toLowerCase(), rs.getObject(i));
 				}
 				results.add(record);
 			}

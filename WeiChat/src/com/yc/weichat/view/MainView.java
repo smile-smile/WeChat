@@ -3,14 +3,18 @@ package com.yc.weichat.view;
 import static com.yc.weichat.util.UIUtil.changeImage;
 import static com.yc.weichat.util.UIUtil.winCenter;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
@@ -18,10 +22,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
@@ -30,19 +34,71 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseTrackAdapter;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.wb.swt.SWTResourceManager;
 
+
+
+
+
+
+
+
+
+
+import com.ibm.icu.text.SimpleDateFormat;
 import com.yc.weichat.entity.Account;
+import com.yc.weichat.server.Properties;
 import com.yc.weichat.service.AccountService;
+import com.yc.weichat.service.FriendsService;
+import com.yc.weichat.service.impl.AccountServiceimpl;
+import com.yc.weichat.service.impl.FriendsServiceimpl;
 import com.yc.weichat.util.UIUtil;
+
+import static com.yc.weichat.util.ClientUtil.*;
 
 public class MainView {
 
 	protected Shell shell;
-	private Text text;
-	private Account acc;
-
+	private Text txtfind;
+	private Account acc, other;
+	private List<Composite> list;
+	private List<Account> friends;
+	private Button btnChat, btnFriend, btnCollect, btnSetting;
+	private Text textChatRecord;
+	private Text textContent;
+	StackLayout sLayout, sLayout2;
+	Composite composite_5;
+	Composite composite_6;
+	Composite composite_12;
+	Composite composite_13;
+	Composite composite_14;
+	Composite composite_15;
+	Composite composite_16;
+	
+	Label lblOther;
+	Label lbl_headPortait;
+	Label lbl_name;
+	Label lbl_sex;
+	Label lbl_userId;
+	Label lbl_remarkname;
+	Label lbl__address;
+	
+	Label lab_friendSex;
+	Label lab_friendAdress;
+	Label lab_friendId;
+	Label label_name;
+	Label lab_Pic;
+	Account addFriendAccount;
+	
+	public static String chatWays;
+	public static String otherId;
+	public static String sendMessage;
+	public static String receiveMessage;
+//	public Socket client;
+//	private boolean isRunning = true;
+//	private DataInputStream dis;
+//	private DataOutputStream dos;
+	
 	/**
 	 * Launch the application.
 	 * @param args
@@ -61,6 +117,7 @@ public class MainView {
 	 */
 	public void open() {
 		Display display = Display.getDefault();
+		
 		createContents();
 		shell.open();
 		shell.layout();
@@ -74,26 +131,17 @@ public class MainView {
 	/**
 	 * Create contents of the window.
 	 */
-	Button btnChat, btnFriend, btnCollect, btnSetting;
-	private Text text_1;
-	private Text text_2;
-	StackLayout sLayout;
-	Composite composite_5;
-	Composite composite_6;
-	Composite composite_12;
+	
 	protected void createContents() {
-		try {
-			acc = ((Account)UIUtil.user).clone();
-		} catch (CloneNotSupportedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+		
 		shell = new Shell(SWT.MIN|SWT.CLOSE);
 		shell.setImage(SWTResourceManager.getImage(MainView.class, "/images/icon.jpg"));
 		shell.setSize(1150, 800);
 		winCenter(shell);
 		shell.setText("微信");
 		shell.setLayout(new FillLayout(SWT.HORIZONTAL));
+		
+		loadData();
 		
 		SashForm sashForm = new SashForm(shell, SWT.NONE);
 		Image image2 = changeImage("images/press_message.png", 60, 60);
@@ -114,23 +162,22 @@ public class MainView {
 		btnChat = new Button(composite_1, SWT.NONE);
 		btnChat.setBounds(-1, 66, 60, 60);
 		btnChat.setImage(image2);
-		addPressEvent(btnChat, "images/press_message.png");
+		
 		
 		btnFriend = new Button(composite_1, SWT.NONE);
-		btnFriend.setBounds(0, 132, 60, 60);
+		btnFriend.setBounds(0, 136, 60, 60);
 		btnFriend.setImage(image3);
-		addPressEvent(btnFriend, "images/press_friend.png");
+		
 		
 		
 		btnCollect = new Button(composite_1, SWT.NONE);
-		btnCollect.setBounds(0, 198, 60, 60);
+		btnCollect.setBounds(0, 210, 60, 60);
 		btnCollect.setImage(image4);
-		addPressEvent(btnCollect, "images/press_collect.png");
+		
 		
 		btnSetting = new Button(composite_1, SWT.NONE);
 		btnSetting.setBounds(0, 700, 60, 60);
 		btnSetting.setImage(image5);
-		//addPressEvent(btnFriend, "images/press_setting.png");
 		
 		Composite composite_2 = new Composite(sashForm, SWT.NONE);
 		composite_2.setLayout(new FillLayout(SWT.HORIZONTAL));
@@ -140,13 +187,13 @@ public class MainView {
 		
 		Composite composite_21 = new Composite(sashForm_1, SWT.NONE);
 		
-		text = new Text(composite_21, SWT.BORDER);
-		text.setForeground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
-		text.setText("请输入关键字");
-		text.setBounds(10, 20, 239, 30);
+		txtfind = new Text(composite_21, SWT.BORDER);
+		txtfind.setForeground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
+		txtfind.setText("请输入关键字");
+		txtfind.setBounds(10, 20, 209, 30);
 		
 		//文本焦点事件  提示语显示与关闭
-		text.addFocusListener(new FocusAdapter() {
+		txtfind.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusGained(FocusEvent e) {
 				 Text text=(Text)e.widget;
@@ -173,25 +220,31 @@ public class MainView {
 		Image image6 = changeImage("images/add.png", 60, 60);
 		btnNewButton_5.setImage(image6);
 		
+		
+		
 		ScrolledComposite scrolledComposite = new ScrolledComposite(sashForm_1, SWT.BORDER | SWT.V_SCROLL);
 		scrolledComposite.setExpandHorizontal(true);
 		scrolledComposite.setExpandVertical(true);
 		
+		sLayout2 = new StackLayout();
 		Composite composite = new Composite(scrolledComposite, SWT.NONE);
-		composite.setLayout(new RowLayout(SWT.VERTICAL));
+		composite.setLayout(sLayout2);
 		
-//		Button btnNewButton_1 = new Button(composite, SWT.NONE);
-//		btnNewButton_1.setLayoutData(new RowData(268, 80));
-//		btnNewButton_1.setText("New Button");
+		composite_14 = new Composite(composite, SWT.NONE);
+		addPressEvent(btnChat, "images/press_message.png", composite_14);
 		
-		List<Button> list = new ArrayList<Button>();
-		for(int i=0; i<100; i++) {
-			Button l = new Button(composite, SWT.NONE);
-			l.setText("AAA");
-			
-			list.add(l);
-		}
+		composite_15 = new Composite(composite, SWT.NONE);
+		addPressEvent(btnFriend, "images/press_friend.png", composite_15);
 		
+		
+		RowLayout rl_composite_15 = new RowLayout(SWT.VERTICAL);
+		composite_15.setLayout(rl_composite_15);
+		
+		
+		composite_16 = new Composite(composite, SWT.NONE);
+		addPressEvent(btnCollect, "images/press_collect.png", composite_16);
+		
+		showCenterComposite(composite_14);
 		
 		scrolledComposite.setContent(composite);
 		scrolledComposite.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
@@ -219,9 +272,10 @@ public class MainView {
 		Composite composite_7 = new Composite(sashForm_2, SWT.NONE);
 		
 		
-		Label lblNewLabel_1 = new Label(composite_7, SWT.NONE);
-		lblNewLabel_1.setBounds(328, 10, 90, 24);
-		lblNewLabel_1.setText("New Label");
+		lblOther = new Label(composite_7, SWT.NONE);
+		lblOther.setAlignment(SWT.CENTER);
+		lblOther.setBounds(328, 10, 90, 24);
+		
 		
 		ScrolledComposite scrolledComposite_1 = new ScrolledComposite(sashForm_2, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		scrolledComposite_1.setExpandHorizontal(true);
@@ -230,10 +284,13 @@ public class MainView {
 		Composite composite_10 = new Composite(scrolledComposite_1, SWT.NONE);
 		composite_10.setLayout(new FillLayout(SWT.HORIZONTAL));
 		
-		text_1 = new Text(composite_10, SWT.BORDER | SWT.WRAP | SWT.H_SCROLL | SWT.CANCEL);
-		text_1.setEditable(false);
+		textChatRecord = new Text(composite_10, SWT.BORDER | SWT.WRAP | SWT.H_SCROLL | SWT.CANCEL);
+		textChatRecord.setEditable(false);
 		scrolledComposite_1.setContent(composite_10);
 		scrolledComposite_1.setMinSize(composite_10.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+
+		
+		
 		
 		Composite composite_8 = new Composite(sashForm_2, SWT.NONE);
 		
@@ -270,93 +327,358 @@ public class MainView {
 		Composite composite_11 = new Composite(scrolledComposite_2, SWT.NONE);
 		composite_11.setLayout(new FillLayout(SWT.HORIZONTAL));
 		
-		text_2 = new Text(composite_11, SWT.BORDER | SWT.WRAP | SWT.H_SCROLL | SWT.CANCEL);
+		textContent = new Text(composite_11, SWT.BORDER | SWT.WRAP | SWT.H_SCROLL | SWT.CANCEL);
 		scrolledComposite_2.setContent(composite_11);
 		scrolledComposite_2.setMinSize(composite_11.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		
 		Composite composite_9 = new Composite(sashForm_2, SWT.NONE);
 		
 		Button btnSend = new Button(composite_9, SWT.NONE);
-		btnSend.setBounds(652, 0, 100, 40);
+		btnSend.setBounds(672, 0, 80, 30);
 		btnSend.setImage(changeImage("images/send.png", 100, 40));
-		sashForm_2.setWeights(new int[] {5, 60, 5, 25, 5});
 		sashForm.setWeights(new int[] {5, 25, 1, 63});
+		
+		sashForm_2.setWeights(new int[] {37, 448, 37, 195, 31});
 		addSendEvent(btnSend);
+		
+		
+		
+		
+		
+		
+//		new Thread(new Runnable() {
+//			
+//			@Override
+//			public void run() {
+//				while(true) {
+//					System.out.println(receiveMsg());
+//				}
+//				
+//			}
+//		}).start();
+			
 		
 		
 		//堆栈布局第二块面板设计   采用绝对布局
 		composite_12 = new Composite(composite_4, SWT.NONE);
+		composite_12.setLayout(null);
 		
-		Label lbl_headportait = new Label(composite_12, SWT.NONE);
-		lbl_headportait.setAlignment(SWT.CENTER);
-		lbl_headportait.setImage(SWTResourceManager.getImage(MainView.class, "/images/people1.png"));
-		lbl_headportait.setBounds(306, 196, 200,200);
+		composite_13 = new Composite(composite_4, SWT.NONE);
+		composite_13.setVisible(false);
 		
-		Label lbl_name = new Label(composite_12, SWT.NONE);
+		lbl_headPortait = new Label(composite_12, SWT.NONE);
+		lbl_headPortait.setBounds(291, 139, 200, 200);
+		lbl_headPortait.setAlignment(SWT.CENTER);
+		
+		lbl_name = new Label(composite_12, SWT.NONE);
+		lbl_name.setBounds(272, 365, 250, 30);
 		lbl_name.setForeground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
 		lbl_name.setAlignment(SWT.CENTER);
 		lbl_name.setFont(SWTResourceManager.getFont("Microsoft YaHei UI", 13, SWT.NORMAL));
-		lbl_name.setBounds(287, 424, 250,30);
-		lbl_name.setText("有识之士");
 		
-		Label lbl_motto = new Label(composite_12, SWT.NONE);
-		lbl_motto.setAlignment(SWT.CENTER);
-		lbl_motto.setEnabled(false);
-		lbl_motto.setBounds(287, 474, 250,30);
-		lbl_motto.setText("“慎独”");
+		lbl_userId = new Label(composite_12, SWT.NONE);
+		lbl_userId.setBounds(351, 456, 200, 30);
+		lbl_userId.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
+		lbl_userId.setAlignment(SWT.CENTER);
 		
-		Label lbl_remark = new Label(composite_12, SWT.NONE);
-		lbl_remark.setFont(SWTResourceManager.getFont("Microsoft Sans Serif", 11, SWT.NORMAL));
-		lbl_remark.setAlignment(SWT.CENTER);
-		lbl_remark.setEnabled(false);
-		lbl_remark.setBounds(295, 510, 65, 30);
-		lbl_remark.setText("备注");
+		lbl_sex = new Label(composite_12, SWT.NONE);
+		lbl_sex.setBounds(351, 492, 200, 30);
+		lbl_sex.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
+		lbl_sex.setAlignment(SWT.CENTER);
 		
-		Label lbl_remarkname = new Label(composite_12, SWT.NONE);
+		lbl_remarkname = new Label(composite_12, SWT.NONE);
+		lbl_remarkname.setBounds(351, 420, 200, 30);
 		lbl_remarkname.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
 		lbl_remarkname.setAlignment(SWT.CENTER);
-		lbl_remarkname.setBounds(366, 510,200,30);
-		lbl_remarkname.setText("陈谭军");
 		
-		Label lbl_weixinnumber = new Label(composite_12, SWT.NONE);
-		lbl_weixinnumber.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
-		lbl_weixinnumber.setAlignment(SWT.CENTER);
-		lbl_weixinnumber.setEnabled(false);
-		lbl_weixinnumber.setBounds(295, 546, 65, 30);
-		lbl_weixinnumber.setText("微信号");
+		lbl__address = new Label(composite_12, SWT.NONE);
+		lbl__address.setBounds(351, 525, 200, 30);
+		lbl__address.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
+		lbl__address.setAlignment(SWT.CENTER);
 		
-		Label lbl_number = new Label(composite_12, SWT.NONE);
-		lbl_number.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
-		lbl_number.setAlignment(SWT.CENTER);
-		lbl_number.setBounds(366, 546,200,30);
-		lbl_number.setText("clj22222jcl");
+		Label label1 = new Label(composite_12, SWT.NONE);
+		label1.setBounds(272, 420, 73, 30);
+		label1.setFont(SWTResourceManager.getFont("Microsoft Sans Serif", 11, SWT.NORMAL));
+		label1.setAlignment(SWT.CENTER);
+		label1.setEnabled(false);
+		label1.setText("备注");
 		
-		Label lbl_district = new Label(composite_12, SWT.NONE);
-		lbl_district.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
-		lbl_district.setAlignment(SWT.CENTER);
-		lbl_district.setEnabled(false);
-		lbl_district.setBounds(295, 582,65, 30);
-		lbl_district.setText("地区");
+		Label label2 = new Label(composite_12, SWT.NONE);
+		label2.setBounds(272, 456, 73, 30);
+		label2.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
+		label2.setAlignment(SWT.CENTER);
+		label2.setEnabled(false);
+		label2.setText("微信号");
 		
-		Label lbl__districtname = new Label(composite_12, SWT.NONE);
-		lbl__districtname.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
-		lbl__districtname.setAlignment(SWT.CENTER);
-		lbl__districtname.setBounds(366, 582, 200,30);
-		lbl__districtname.setText("湖南 衡阳");
+		Label label3 = new Label(composite_12, SWT.NONE);
+		label3.setAlignment(SWT.CENTER);
+		label3.setBounds(272, 492, 73, 30);
+		label3.setText("性别");
+		label3.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
+		label3.setEnabled(false);
+		
+		Label label4 = new Label(composite_12, SWT.NONE);
+		label4.setBounds(272, 525, 73, 30);
+		label4.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
+		label4.setAlignment(SWT.CENTER);
+		label4.setEnabled(false);
+		label4.setText("地区");
+		
+		
+		
+		
+		lab_Pic = new Label(composite_13, SWT.NONE);
+		lab_Pic.setAlignment(SWT.CENTER);
+		lab_Pic.setBounds(283, 153, 200, 200);
+		lab_Pic.setImage(changeImage("images/not_pic.jpg", 200, 200));
+		
+		label_name = new Label(composite_13, SWT.NONE);
+		label_name.setText("未设置");
+		label_name.setForeground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
+		label_name.setFont(SWTResourceManager.getFont("Microsoft YaHei UI", 13, SWT.NORMAL));
+		label_name.setAlignment(SWT.CENTER);
+		label_name.setBounds(264, 381, 250, 30);
+		
+		Label label_5 = new Label(composite_13, SWT.NONE);
+		label_5.setText("微信号");
+		label_5.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
+		label_5.setEnabled(false);
+		label_5.setAlignment(SWT.CENTER);
+		label_5.setBounds(272, 445, 65, 30);
+		
+		lab_friendId = new Label(composite_13, SWT.NONE);
+		lab_friendId.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
+		lab_friendId.setAlignment(SWT.CENTER);
+		lab_friendId.setBounds(343, 445, 200, 30);
+		
+		Label label_7 = new Label(composite_13, SWT.NONE);
+		label_7.setText("地区");
+		label_7.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
+		label_7.setEnabled(false);
+		label_7.setBounds(283, 536, 65, 30);
+		
+		lab_friendAdress = new Label(composite_13, SWT.NONE);
+		lab_friendAdress.setText("未设置");
+		lab_friendAdress.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
+		lab_friendAdress.setAlignment(SWT.CENTER);
+		lab_friendAdress.setBounds(343, 536, 200, 30);
+		
+		Button but_addfriend = new Button(composite_13, SWT.NONE);
+		but_addfriend.setText("加好友");
+		but_addfriend.setBounds(264, 597, 250, 46);
+		addFriends(but_addfriend);
+		
+		Label label_2 = new Label(composite_13, SWT.NONE);
+		label_2.setText("性别");
+		label_2.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
+		label_2.setEnabled(false);
+		label_2.setAlignment(SWT.CENTER);
+		label_2.setBounds(272, 490, 65, 30);
+		
+		lab_friendSex = new Label(composite_13, SWT.NONE);
+		lab_friendSex.setText("未设置");
+		lab_friendSex.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
+		lab_friendSex.setAlignment(SWT.CENTER);
+		lab_friendSex.setBounds(343, 490, 200, 30);
+		
+
+		Button btn_find = new Button(composite_21, SWT.NONE);
+		btn_find.setImage(SWTResourceManager.getImage(MainView.class, "/images/find.png"));
+		btn_find.setBounds(224, 20, 30, 30);
+		addFriends_find(btn_find);
 		
 		Button btn_startchat = new Button(composite_12, SWT.NONE);
-		btn_startchat.setBounds(287, 640, 250, 46);
+		btn_startchat.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				showRightComposite(composite_6);
+				lblOther.setText(other.getUserId());
+				
+				otherId = Properties.OTHER_ID.concat(lblOther.getText().trim());
+				sendMsg(otherId);
+				
+			}
+		});
+		btn_startchat.setBounds(272, 583, 250, 46);
 		btn_startchat.setText("发消息");
 		
+		showRightComposite(composite_5);
 		
-		showComposite(composite_6);
+		listFriendInfo();
+		showFriendInfo();
+		
+		receive();
 	}
 
-	private void showComposite(Composite composite) {
+	
+
+	private void receive() {
+		new Thread(){
+			@Override
+			public void run() {
+				while(isRunning) {
+					receiveMessage = receiveMsg();
+					Display.getDefault().asyncExec(new Runnable() {
+						
+						@Override
+						public void run() {
+							if(receiveMessage.startsWith(Properties.PRIVATE_CHAT)) {
+								privateChat(receiveMessage);
+							}
+						}
+					});
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		}.start();
+	}
+	
+	private void privateChat(String msg) {
+		String[] str = msg.split("#");
+		String otherId = Properties.OTHER_ID.concat(str[1]);
+		sendMsg(otherId);
+		lblOther.setText(str[1]);
+		showRightComposite(composite_6);
+		textChatRecord.append(str[1] + ":  " + str[0].substring(Properties.PRIVATE_CHAT.length()) + "\r\n\r\n");
+	}
+	
+	private void showFriendInfo() {
+		for(int i=0; i<list.size(); i++) {
+			Composite c = list.get(i);
+			Label image = (Label) c.getChildren()[0];
+			Label name = (Label)c.getChildren()[1];
+			int count = i;
+			c.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseDown(MouseEvent e) {
+					other = friends.get(count);
+					flushFriendInfo();
+				}
+
+				
+
+			});
+			image.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseDown(MouseEvent e) {
+					other = friends.get(count);
+					flushFriendInfo();
+				}
+
+			});
+			name.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseDown(MouseEvent e) {
+					other = friends.get(count);
+					flushFriendInfo();
+				}
+
+			});
+		}
+	}
+	
+	private void flushFriendInfo() {
+		if(other.getPic() != null) {
+			lbl_headPortait.setImage(changeImage("images/" + other.getUserId() + ".jpg", 200, 200));
+		} else {
+			lbl_headPortait.setImage(changeImage("images/not_pic.jpg", 200, 200));
+		}
+		if(other.getName() != null) {
+			lbl_name.setText(other.getName());
+		} else {
+			lbl_name.setText("未设置");
+		}
+		lbl_remarkname.setText("未设置");
+		lbl_userId.setText(other.getUserId());
+		if(other.getSex() != null) {
+			lbl_sex.setText(other.getSex());
+		} else {
+			lbl_sex.setText("未设置");
+		}
+		if(other.getAddress() != null) {
+			lbl__address.setText(other.getAddress());
+		} else {
+			lbl__address.setText("未设置");
+		}
+		showRightComposite(composite_12);
+	}
+
+	/**
+	 * 加载数据
+	 */
+	private void loadData() {
+		try {
+			acc = ((Account)UIUtil.user).clone();
+		} catch (CloneNotSupportedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		FriendsService fs = new FriendsServiceimpl();
+		UIUtil.friendList = fs.listFriendsInfo(acc.getUserId());
+		
+		friends = new ArrayList<Account>();
+		for(Account account : UIUtil.friendList) {
+			if(account.getPic() != null) {
+				File file = new File(System.getProperty("user.dir") + "\\src\\images\\" + account.getUserId() + ".jpg");
+				if(!file.exists()) {
+					UIUtil.saveBit(account.getPic(), account.getUserId());
+				}
+			}
+			friends.add(account);
+		}
+	}
+
+	/**
+	 * 列出朋友列表
+	 */
+	private void listFriendInfo() {
+		list = new ArrayList<Composite>();
+		for(int i=0; i<friends.size(); i++) {
+			other = friends.get(i);
+			Composite c = new Composite(composite_15, SWT.BORDER);
+			c.setLayout(null);
+			Label pic = new Label(c, SWT.NONE);
+			pic.setBounds(0, 0, 70, 70);
+			if(other.getPic() != null) {
+				try {
+					pic.setImage(changeImage(new FileInputStream(System.getProperty("user.dir") + 
+							"\\src\\images\\" + other.getUserId() + ".jpg"), 70, 70));
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} else {
+				pic.setImage(changeImage("images/not_pic.jpg", 70, 70));
+			}
+			
+			Label name = new Label(c, SWT.NONE);
+			name.setBounds(90, 0, 165, 70);
+			name.setText(other.getUserId());
+	
+			list.add(c);
+		}		
+	}
+
+	private void showCenterComposite(Composite composite) {
+		sLayout2.topControl=composite;
+		composite_14.setVisible(false);
+		composite_15.setVisible(false);
+		composite_16.setVisible(false);
+		composite.setVisible(true);
+	}
+
+	private void showRightComposite(Composite composite) {
 		sLayout.topControl=composite;
 		composite_5.setVisible(false);
 		composite_6.setVisible(false);
 		composite_12.setVisible(false);
+		composite_13.setVisible(false);
 		composite.setVisible(true);	
 	}
 	
@@ -366,11 +688,17 @@ public class MainView {
 			public void mouseDown(MouseEvent e) {
 				Button b = (Button)e.widget;
 				b.setImage(SWTResourceManager.getImage(UIUtil.class, "/images/press_send.png"));
+				
 			}
 			@Override
 			public void mouseUp(MouseEvent e) {
 				Button b = (Button)e.widget;
 				b.setImage(SWTResourceManager.getImage(UIUtil.class, "/images/send.png"));
+				
+				sendMessage = textContent.getText().trim();
+				sendMsg(Properties.PRIVATE_CHAT.concat(sendMessage));
+				textChatRecord.append(acc.getUserId() + ":  " +sendMessage + "\r\n\r\n");
+				textContent.setText("");
 			}
 		});
 		btn.addMouseTrackListener(new MouseTrackAdapter() {
@@ -387,8 +715,11 @@ public class MainView {
 			
 		});
 	}
+	
+	
+	
 
-	private void addPressEvent(Button button, String path) {
+	private void addPressEvent(Button button, String path, Composite composite) {
 		button.addSelectionListener(new SelectionAdapter() {
 
 			@Override
@@ -396,6 +727,8 @@ public class MainView {
 				Button btn = (Button)e.widget;
 				setGrayBtn();
 				btn.setImage(changeImage(path, 60, 60));
+				showCenterComposite(composite);
+				showRightComposite(composite_5);
 			}
 			
 		});
@@ -406,6 +739,107 @@ public class MainView {
 		btnChat.setImage(changeImage("images/message.png", 60, 60));
 		btnFriend.setImage(changeImage("images/friend.png", 60, 60));
 		btnCollect.setImage(changeImage("images/collect.png", 60, 60));
-		btnSetting.setImage(changeImage("images/setting.png", 60, 60));
+	}
+	
+	private void addFriends_find(Button btn_find) {
+		btn_find.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				String userId=txtfind.getText();
+				AccountService as = new AccountServiceimpl();
+				if(as.findAccount(userId)!=null){
+					addFriendAccount = as.findAccount(userId);
+					if(addFriendAccount.getName() != null) {
+						label_name.setText(addFriendAccount.getName());
+					} else {
+						label_name.setText("未设置");
+					}
+					lab_friendId.setText(as.findAccount(userId).getUserId());
+					if(addFriendAccount.getSex() != null) {
+						lab_friendSex.setText(addFriendAccount.getSex());
+					} else {
+						lab_friendSex.setText("未设置");
+					}
+					if(addFriendAccount.getAddress() != null) {
+						lab_friendAdress.setText(addFriendAccount.getAddress());
+					} else{
+						lab_friendAdress.setText("未设置");
+					}
+					if(addFriendAccount.getPic()!=null)
+					{
+						lab_Pic.setImage(changeImage(addFriendAccount.getPic(), 200, 200));
+					} else {
+						lab_Pic.setImage(changeImage("images/not_pic.jpg", 200, 200));
+					}
+					showRightComposite(composite_13);
+				}else{
+					MessageBox mBox=new MessageBox(((Button)e.widget).getShell(),SWT.YES|SWT.NO|SWT.ICON_INFORMATION);
+					mBox.setText("加好友");
+					mBox.setMessage("该账户不存在");
+					mBox.open();
+//					if(mBox.open()==SWT.YES)
+//					{
+//						InputDialog id=new InputDialog(shell, "邀请你的朋友注册微信","输入邮箱","",null);
+//						id.open();
+//					}
+				}
+				
+			}
+		});
+	}
+	
+	private void addFriends(Button but_addfriend) {
+		but_addfriend.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				String friendId=lab_friendId.getText();
+				String friendName=label_name.getText();
+				if(friendName.equals("未设置")) {
+					friendName = null;
+				}
+				String userId=acc.getUserId();
+				MessageBox mBox=new MessageBox(shell);
+				mBox.setText("添加好友");
+				FriendsService fs=new FriendsServiceimpl();
+				if(fs.addFriend(userId, friendId, acc.getName()) && fs.addFriend(friendId, userId, acc.getName()))
+				{
+					
+					mBox.setMessage("添加好友成功");
+					friends.add(addFriendAccount);
+					mBox.open();
+					flushFriend();
+				}else{
+					mBox.setMessage("已经是您的好友");
+					mBox.open();
+				}
+			}
+		});
+	}
+	
+	public void flushFriend() {
+//		Composite c = new Composite(composite_15, SWT.BORDER);
+//		c.setLayout(null);
+//		Label pic = new Label(c, SWT.NONE);
+//		pic.setBounds(0, 0, 70, 70);
+//		if(addFriendAccount.getPic() != null) {
+//			pic.setImage(changeImage(addFriendAccount.getPic(), 70, 70));
+//		} else {
+//			pic.setImage(changeImage("images/not_pic.jpg", 70, 70));
+//		}
+//		
+//		Label name = new Label(c, SWT.NONE);
+//		name.setBounds(90, 0, 165, 70);
+//		name.setText(addFriendAccount.getUserId());
+//		list.add(c);
+//		composite_15.redraw();
+//		composite_15.update();
+//		shell.update();
+		
+//		list.clear();
+//		listFriendInfo();
+//		composite_15.redraw();
+//		composite_15.redraw();
+//		listFriendInfo();
+//		composite_15.update();
 	}
 }

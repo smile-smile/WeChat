@@ -6,4 +6,5 @@ public interface AccountService {
 	
 	public Account login(String userId, String password);
 	public boolean register(Account acc);
+	public Account findAccount(String userId);
 }
