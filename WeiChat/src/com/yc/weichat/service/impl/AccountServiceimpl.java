@@ -30,7 +30,7 @@ public class AccountServiceimpl implements AccountService{
 		account.setEmail((String)result.get("email"));
 		account.setName((String)result.get("name"));
 		account.setSex((String)result.get("sex"));
-		account.setPic((InputStream)result.get("pic"));
+		//account.setPic((InputStream)result.get("pic"));
 		return account;
 		
 	}
@@ -51,7 +51,7 @@ public class AccountServiceimpl implements AccountService{
 		account.setEmail((String)result.get("email"));
 		account.setName((String)result.get("name"));
 		account.setSex((String)result.get("sex"));
-		account.setPic((InputStream)result.get("pic"));
+		//account.setPic((InputStream)result.get("pic"));
 		return account;
 	}
 	

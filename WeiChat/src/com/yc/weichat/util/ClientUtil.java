@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import com.yc.weichat.entity.Account;
 import com.yc.weichat.server.Properties;
 
 public class ClientUtil {
@@ -28,6 +29,7 @@ public class ClientUtil {
 			e.printStackTrace();
 		}
 	}
+	
 	
 	public static void sendMsg(String msg) {
 		if(msg != null && msg != "") {
@@ -53,6 +55,31 @@ public class ClientUtil {
 			//e.printStackTrace();
 		}
 		return msg;
+	}
+	
+	public static Account getAccount(String message) {
+		String[] str = message.split("#");
+		Account ac = new Account();
+		ac.setUserId(str[1]);
+		ac.setPassword(str[2]);
+		ac.setPhone(str[3]);
+		ac.setEmail(str[4]);
+		if(str[5].equals(Properties.NULL)) {
+			ac.setName(null);
+		} else {
+			ac.setName(str[5]);
+		}
+		if(str[6].equals(Properties.NULL)) {
+			ac.setSex(null);
+		} else {
+			ac.setSex(str[6]);
+		}
+		if(str[7].equals(Properties.NULL)) {
+			ac.setAddress(null);
+		} else {
+			ac.setAddress(str[7]);
+		}
+		return ac;
 	}
 	
 	

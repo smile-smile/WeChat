@@ -1,6 +1,8 @@
 package com.yc.weichat.view;
 
 
+import java.util.ArrayList;
+
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseTrackAdapter;
@@ -19,6 +21,7 @@ import static com.yc.weichat.util.UIUtil.*;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 import com.yc.weichat.entity.Account;
+import com.yc.weichat.server.Properties;
 import com.yc.weichat.service.AccountService;
 import com.yc.weichat.service.impl.AccountServiceimpl;
 import com.yc.weichat.util.UIUtil;
@@ -43,6 +46,7 @@ public class Login {
 	public static void main(String[] args) {
 		try {
 			Login window = new Login();
+			connect();
 			window.open();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -147,18 +151,21 @@ public class Login {
 						mb.open();
 						return;
 					}
-					AccountService as = new AccountServiceimpl();
-					account =as.login(id, pwd);
-					if(account != null) {
-						UIUtil.user = (Account)account;
-						shell.dispose();
-						connect();
-						sendMsg(id);
-						new MainView().open();
-					} else {
+//					AccountService as = new AccountServiceimpl();
+//					account =as.login(id, pwd);
+					sendMsg(Properties.ACCOUNT_ID_PASSWORD +"#" + id + "#" + pwd);
+					String isSuccess = receiveMsg();
+					if(isSuccess.equals(Properties.NULL_ACCOUNT)) {
 						mb.setMessage("微信号或密码错误");
 						mb.open();
 						return;
+					}
+					if(isSuccess.startsWith(Properties.ACCOUNT)) {
+						
+						user = getAccount(isSuccess);
+						
+						shell.dispose();
+						new MainView().open();
 					}
 					
 				}
@@ -178,6 +185,8 @@ public class Login {
 			
 		});
 	}
+	
+	
 	
 	/**
 	 * 注册

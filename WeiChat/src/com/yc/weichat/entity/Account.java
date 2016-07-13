@@ -63,8 +63,7 @@ public class Account implements Cloneable {
 	public String toString() {
 		return "Account [userId=" + userId + ", password=" + password
 				+ ", phone=" + phone + ", email=" + email + ", name=" + name
-				+ ", address=" + address + ", sex=" + sex + ", pic=" + pic
-				+ "]";
+				+ ", address=" + address + ", sex=" + sex + "]";
 	}
 	@Override
 	public Account clone() throws CloneNotSupportedException {

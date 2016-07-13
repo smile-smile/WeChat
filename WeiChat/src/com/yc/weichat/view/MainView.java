@@ -1,13 +1,9 @@
 package com.yc.weichat.view;
 
-import static com.yc.weichat.util.UIUtil.changeImage;
-import static com.yc.weichat.util.UIUtil.winCenter;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.InputDialog;
@@ -36,16 +32,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.wb.swt.SWTResourceManager;
 
-
-
-
-
-
-
-
-
-
-import com.ibm.icu.text.SimpleDateFormat;
 import com.yc.weichat.entity.Account;
 import com.yc.weichat.server.Properties;
 import com.yc.weichat.service.AccountService;
@@ -55,6 +41,7 @@ import com.yc.weichat.service.impl.FriendsServiceimpl;
 import com.yc.weichat.util.UIUtil;
 
 import static com.yc.weichat.util.ClientUtil.*;
+import static com.yc.weichat.util.UIUtil.*;
 
 public class MainView {
 
@@ -343,22 +330,6 @@ public class MainView {
 		
 		
 		
-		
-		
-		
-//		new Thread(new Runnable() {
-//			
-//			@Override
-//			public void run() {
-//				while(true) {
-//					System.out.println(receiveMsg());
-//				}
-//				
-//			}
-//		}).start();
-			
-		
-		
 		//堆栈布局第二块面板设计   采用绝对布局
 		composite_12 = new Composite(composite_4, SWT.NONE);
 		composite_12.setLayout(null);
@@ -493,7 +464,6 @@ public class MainView {
 			public void widgetSelected(SelectionEvent e) {
 				showRightComposite(composite_6);
 				lblOther.setText(other.getUserId());
-				
 				otherId = Properties.OTHER_ID.concat(lblOther.getText().trim());
 				sendMsg(otherId);
 				
@@ -518,24 +488,91 @@ public class MainView {
 			public void run() {
 				while(isRunning) {
 					receiveMessage = receiveMsg();
+					System.out.println("receiveMessage:" + receiveMessage);
 					Display.getDefault().asyncExec(new Runnable() {
 						
 						@Override
 						public void run() {
-							if(receiveMessage.startsWith(Properties.PRIVATE_CHAT)) {
-								privateChat(receiveMessage);
-							}
+							dealMessage(receiveMessage);
 						}
 					});
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
 			}
 		}.start();
+	}
+	
+	private void dealMessage(String receiveMessage) {
+		if(receiveMessage.startsWith(Properties.PRIVATE_CHAT)) {
+			privateChat(receiveMessage);
+		} else if(receiveMessage.startsWith(Properties.ACCOUNT)) {
+			findAccount(receiveMessage);
+		} else if(receiveMessage.startsWith(Properties.NULL_ACCOUNT)) {
+			notFindAccount(receiveMessage);
+		} else if(receiveMessage.startsWith(Properties.ADD_FRIEND_SUCCESS)) {
+			addFriendSuccess(receiveMessage);
+		} else if(receiveMessage.startsWith(Properties.ADD_FRIEND_FAIL)) {
+			addFriendFail(receiveMessage);
+		}
+	}
+	
+	private void addFriendFail(String receiveMessage2) {
+		MessageBox mBox=new MessageBox(shell);
+		mBox.setText("添加好友");
+		mBox.setMessage("已经是您的好友");
+		mBox.open();
+	}
+
+	private void addFriendSuccess(String receiveMessage2) {
+		MessageBox mBox=new MessageBox(shell);
+		mBox.setText("添加好友");
+		mBox.setMessage("添加好友成功");
+		friends.add(addFriendAccount);
+		mBox.open();
+		
+	}
+
+	private void findAccount(String message) {
+		addFriendAccount = getAccount(message);
+		if(addFriendAccount.getName() != null) {
+			label_name.setText(addFriendAccount.getName());
+		} else {
+			label_name.setText("未设置");
+		}
+		lab_friendId.setText(addFriendAccount.getUserId());
+		if(addFriendAccount.getSex() != null) {
+			lab_friendSex.setText(addFriendAccount.getSex());
+		} else {
+			lab_friendSex.setText("未设置");
+		}
+		if(addFriendAccount.getAddress() != null) {
+			lab_friendAdress.setText(addFriendAccount.getAddress());
+		} else{
+			lab_friendAdress.setText("未设置");
+		}
+		if(addFriendAccount.getPic()!=null)
+		{
+			lab_Pic.setImage(changeImage(addFriendAccount.getPic(), 200, 200));
+		} else {
+			lab_Pic.setImage(changeImage("images/not_pic.jpg", 200, 200));
+		}
+		showRightComposite(composite_13);
+	}
+	
+	private void notFindAccount(String receiveMessage) {
+		MessageBox mBox = new MessageBox(shell,SWT.YES|SWT.NO|SWT.ICON_INFORMATION);
+		mBox.setText("加好友");
+		mBox.setMessage("该账户不存在");
+		mBox.open();
+//		if(mBox.open()==SWT.YES)
+//		{
+//			InputDialog id=new InputDialog(shell, "邀请你的朋友注册微信","输入邮箱","",null);
+//			id.open();
+//		}
 	}
 	
 	private void privateChat(String msg) {
@@ -618,12 +655,22 @@ public class MainView {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+		/*
+		 * 获取好友信息
+		 */
+		sendMsg(Properties.REQUEST_FRIEND_LIST);
+		friendList = new ArrayList<Account>();
+		int size = Integer.parseInt(receiveMsg());
+		for(int i=0; i<size; i++) {
+			String msg = receiveMsg();
+			friendList.add(getAccount(msg));
+		}
 		
-		FriendsService fs = new FriendsServiceimpl();
-		UIUtil.friendList = fs.listFriendsInfo(acc.getUserId());
+//		FriendsService fs = new FriendsServiceimpl();
+//		UIUtil.friendList = fs.listFriendsInfo(acc.getUserId());
 		
 		friends = new ArrayList<Account>();
-		for(Account account : UIUtil.friendList) {
+		for(Account account : friendList) {
 			if(account.getPic() != null) {
 				File file = new File(System.getProperty("user.dir") + "\\src\\images\\" + account.getUserId() + ".jpg");
 				if(!file.exists()) {
@@ -697,7 +744,7 @@ public class MainView {
 				
 				sendMessage = textContent.getText().trim();
 				sendMsg(Properties.PRIVATE_CHAT.concat(sendMessage));
-				textChatRecord.append(acc.getUserId() + ":  " +sendMessage + "\r\n\r\n");
+				textChatRecord.append("我:  " +sendMessage + "\r\n\r\n");
 				textContent.setText("");
 			}
 		});
@@ -715,9 +762,6 @@ public class MainView {
 			
 		});
 	}
-	
-	
-	
 
 	private void addPressEvent(Button button, String path, Composite composite) {
 		button.addSelectionListener(new SelectionAdapter() {
@@ -746,44 +790,7 @@ public class MainView {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				String userId=txtfind.getText();
-				AccountService as = new AccountServiceimpl();
-				if(as.findAccount(userId)!=null){
-					addFriendAccount = as.findAccount(userId);
-					if(addFriendAccount.getName() != null) {
-						label_name.setText(addFriendAccount.getName());
-					} else {
-						label_name.setText("未设置");
-					}
-					lab_friendId.setText(as.findAccount(userId).getUserId());
-					if(addFriendAccount.getSex() != null) {
-						lab_friendSex.setText(addFriendAccount.getSex());
-					} else {
-						lab_friendSex.setText("未设置");
-					}
-					if(addFriendAccount.getAddress() != null) {
-						lab_friendAdress.setText(addFriendAccount.getAddress());
-					} else{
-						lab_friendAdress.setText("未设置");
-					}
-					if(addFriendAccount.getPic()!=null)
-					{
-						lab_Pic.setImage(changeImage(addFriendAccount.getPic(), 200, 200));
-					} else {
-						lab_Pic.setImage(changeImage("images/not_pic.jpg", 200, 200));
-					}
-					showRightComposite(composite_13);
-				}else{
-					MessageBox mBox=new MessageBox(((Button)e.widget).getShell(),SWT.YES|SWT.NO|SWT.ICON_INFORMATION);
-					mBox.setText("加好友");
-					mBox.setMessage("该账户不存在");
-					mBox.open();
-//					if(mBox.open()==SWT.YES)
-//					{
-//						InputDialog id=new InputDialog(shell, "邀请你的朋友注册微信","输入邮箱","",null);
-//						id.open();
-//					}
-				}
-				
+				sendMsg(Properties.FIND_ACCOUNT + "#" + userId);
 			}
 		});
 	}
@@ -798,20 +805,15 @@ public class MainView {
 					friendName = null;
 				}
 				String userId=acc.getUserId();
-				MessageBox mBox=new MessageBox(shell);
-				mBox.setText("添加好友");
-				FriendsService fs=new FriendsServiceimpl();
-				if(fs.addFriend(userId, friendId, acc.getName()) && fs.addFriend(friendId, userId, acc.getName()))
-				{
-					
-					mBox.setMessage("添加好友成功");
-					friends.add(addFriendAccount);
-					mBox.open();
-					flushFriend();
-				}else{
-					mBox.setMessage("已经是您的好友");
-					mBox.open();
-				}
+				StringBuilder sb = new StringBuilder();
+				sb.append(Properties.ADD_FRIEND + "#");
+				sb.append(userId + "#");
+				sb.append(friendId + "#");
+				sb.append(friendName + "#");
+				sb.append(acc.getName());
+				String message = sb.toString();
+				sendMsg(message);
+				
 			}
 		});
 	}

@@ -30,8 +30,11 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 
 import com.yc.weichat.entity.Account;
+import com.yc.weichat.server.Properties;
 import com.yc.weichat.service.AccountService;
 import com.yc.weichat.service.impl.AccountServiceimpl;
+
+import static com.yc.weichat.util.ClientUtil.*;
 
 public class Register {
 
@@ -286,39 +289,50 @@ public class Register {
 				Label label = (Label)e.widget;
 				Rectangle r = label.getBounds();
 				if(e.x >=0 && e.x <= r.width && e.y >=0 && e.y <= r.height) {
-					AccountService as = new AccountServiceimpl();
+//					AccountService as = new AccountServiceimpl();
+					String msg = Properties.REGISTER + "#";
+					msg = msg + textAccount.getText().trim() + "#";
+					msg = msg + textPassword.getText().trim() + "#";
+					msg = msg + textPhone.getText().trim() + "#";
+					msg = msg + textEmail.getText().trim() + "#";
+					if(textName.getText().trim() == "") {
+						msg = msg + Properties.NULL + "#";
+					} else {
+						msg = msg + textName.getText().trim() + "#";
+					}
+					if(btnMan.getSelection() == true) {
+						msg = msg + "男" + "#";
+					} else if(btnWoman.getSelection() == true) {
+						msg = msg + "女" + "#";
+					} else {
+						msg = msg + Properties.NULL + "#";
+					}
+					if(textAddress.getText().trim() == "") {
+						msg = msg + Properties.NULL;
+					} else {
+						msg = msg + textAddress.getText().trim();
+					}
+					sendMsg(msg);
+					String isSuccess = receiveMsg();
 					MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION);
 					mb.setText("提示");
-					if(as.register(acc)) {
+					if(isSuccess.equals(Properties.RETURN_TURE)) {
 						mb.setMessage("注册成功");
 						mb.open();
-					} else {
+					} else if(isSuccess.equals(Properties.RETURN_FALSE)) {
 						mb.setMessage("注册失败，该微信号已存在或该手机号已被注册");
 						mb.open();
 					}
+//					if(as.register(acc)) {
+//						mb.setMessage("注册成功");
+//						mb.open();
+//					} else {
+//						mb.setMessage("注册失败，该微信号已存在或该手机号已被注册");
+//						mb.open();
+//					}
 					lblRegister.getShell().dispose();
 					
 				}
-			}
-
-			@Override
-			public void mouseDown(MouseEvent e) {
-				String name = textName.getText().trim();
-				String address = textAddress.getText().trim();
-				if(name == "") {
-					acc.setName(null);
-				} else {
-					acc.setName(name);
-				}
-				if(address == "") {
-					acc.setAddress(null);
-				} else {
-					acc.setAddress(address);
-				}
-				if(btnMan.getSelection() == false && btnWoman.getSelection() == false) {
-					acc.setSex(null);
-				}
-				
 			}
 		});
 	}
