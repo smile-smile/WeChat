@@ -1,8 +1,6 @@
 package com.yc.weichat.view;
 
 
-import java.util.ArrayList;
-
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseTrackAdapter;
@@ -22,8 +20,6 @@ import org.eclipse.wb.swt.SWTResourceManager;
 
 import com.yc.weichat.entity.Account;
 import com.yc.weichat.server.Properties;
-import com.yc.weichat.service.AccountService;
-import com.yc.weichat.service.impl.AccountServiceimpl;
 import com.yc.weichat.util.UIUtil;
 
 public class Login {
@@ -74,7 +70,7 @@ public class Login {
 	protected void createContents() {
 		shell = new Shell(Display.getDefault(), SWT.NONE);
 		addMoveEvent(shell);
-		shell.setSize(420, 600);
+		shell.setSize(378, 560);
 		winCenter(shell);
 		
 		lblNewLabel = new Label(shell, SWT.NONE);
@@ -85,41 +81,41 @@ public class Login {
 		lblClose = new Label(shell, SWT.NONE);
 		lblClose.setImage(SWTResourceManager.getImage(Login.class, "/images/btn_close_normal.png"));
 		addCloseEvent(lblClose);
-		lblClose.setBounds(369, 10, 39, 20);
+		lblClose.setBounds(327, 10, 39, 20);
 		
 		Label lblImage = new Label(shell, SWT.NONE);
 		Image image = changeImage("images/icon2.jpg", 150, 150);
 		lblImage.setImage(image);
 		lblImage.setAlignment(SWT.CENTER);
-		lblImage.setBounds(135, 115, 150, 150);
+		lblImage.setBounds(113, 78, 150, 150);
 		
 		label = new Label(shell, SWT.NONE);
-		label.setFont(SWTResourceManager.getFont("Microsoft YaHei UI", 11, SWT.NORMAL));
-		label.setBounds(45, 300, 80, 40);
+		label.setFont(SWTResourceManager.getFont("Microsoft YaHei UI", 10, SWT.NORMAL));
+		label.setBounds(34, 286, 70, 40);
 		label.setText("微信号");
 		
 		label_1 = new Label(shell, SWT.NONE);
-		label_1.setFont(SWTResourceManager.getFont("Microsoft YaHei UI", 11, SWT.NORMAL));
-		label_1.setBounds(45, 370, 80, 40);
+		label_1.setFont(SWTResourceManager.getFont("Microsoft YaHei UI", 10, SWT.NORMAL));
+		label_1.setBounds(34, 356, 70, 40);
 		label_1.setText("密   码");
 		
 		txtAccount = new Text(shell, SWT.BORDER);
 		txtAccount.setBackground(SWTResourceManager.getColor(SWT.COLOR_INFO_BACKGROUND));
 		txtAccount.setFont(SWTResourceManager.getFont("Microsoft YaHei UI", 10, SWT.NORMAL));
-		txtAccount.setBounds(142, 300, 235, 40);
+		txtAccount.setBounds(114, 283, 217, 40);
 		
 		txtPassword = new Text(shell, SWT.BORDER | SWT.PASSWORD);
 		txtPassword.setBackground(SWTResourceManager.getColor(SWT.COLOR_INFO_BACKGROUND));
 		txtPassword.setFont(SWTResourceManager.getFont("Microsoft YaHei UI", 10, SWT.NORMAL));
-		txtPassword.setBounds(142, 370, 235, 40);
+		txtPassword.setBounds(114, 353, 217, 40);
 		
 		btnLogin = new Label(shell, SWT.NONE);
 		btnLogin.setImage(SWTResourceManager.getImage(Login.class, "/images/login.png"));
-		btnLogin.setBounds(52, 455, 315, 58);
+		btnLogin.setBounds(34, 432, 315, 58);
 		addLoginEvent(btnLogin);
 		
 		labRegister = new Label(shell, SWT.NONE);
-		labRegister.setBounds(190, 548, 40, 25);
+		labRegister.setBounds(171, 513, 40, 25);
 		labRegister.setText("注册");
 		labRegister.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLUE));
 		addRegisterEvent(labRegister);

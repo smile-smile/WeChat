@@ -21,13 +21,14 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 import com.yc.weichat.entity.Account;
+import com.yc.weichat.entity.Group;
 
 
 public class UIUtil {
 
 	public static Object user;
 	public static List<Account> friendList;
-	
+	public static List<Group> groupList;
 
 
 	public static void saveBit(InputStream inStream, String name) {

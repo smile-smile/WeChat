@@ -48,7 +48,7 @@ create table Groups(
 	remark2 varchar2(20),
 	remark3 varchar2(20)
 );
-
+alter table Groups modify adminName not null;
 select * from friends;
 
 alter table Groups rename column remark1 to adminName;
@@ -58,6 +58,7 @@ alter table Groups add constraint fk_groups_account_adminName foreign key(adminN
 
 
 select * from Groups;
+select * from Relation;
 
 create table Relation(
 	groupId varchar2(20),
@@ -75,7 +76,8 @@ select * from user_tables;
 
 insert into ACCOUNT values ('admin', '6f9b0a55df8ac28564cb9f63a10be8af6ab3f7c2', 
 '18216026876', '11987688@qq.com', 'kui', '湖南长沙', '男', null, null, null, null);
-
+insert into groups values ('111', '源程', 'yc', null, null);
+insert into relation values ('111', 'yc', null, null, null);
 
 
 drop table Relation;

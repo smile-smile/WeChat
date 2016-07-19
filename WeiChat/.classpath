@@ -9,7 +9,6 @@
 	<classpathentry kind="lib" path="src/lib/log4j-api-2.0.2.jar"/>
 	<classpathentry kind="lib" path="src/lib/log4j-core-2.0.2.jar"/>
 	<classpathentry kind="lib" path="src/lib/ojdbc6.jar"/>
-	<classpathentry kind="lib" path="swing2swt.jar"/>
 	<classpathentry kind="lib" path="src/lib/com.ibm.icu_52.1.1.v201501240615.jar"/>
 	<classpathentry kind="lib" path="src/lib/org.eclipse.core.commands_3.6.100.v20140528-1422.jar"/>
 	<classpathentry kind="lib" path="src/lib/org.eclipse.core.runtime_3.10.0.v20140318-2214.jar"/>

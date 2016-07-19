@@ -6,9 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import javax.rmi.CORBA.Stub;
 
-import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
@@ -20,7 +18,6 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.custom.StackLayout;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.custom.SashForm;
@@ -31,8 +28,6 @@ import org.eclipse.swt.events.SelectionEvent;
 
 import com.yc.weichat.entity.Account;
 import com.yc.weichat.server.Properties;
-import com.yc.weichat.service.AccountService;
-import com.yc.weichat.service.impl.AccountServiceimpl;
 
 import static com.yc.weichat.util.ClientUtil.*;
 

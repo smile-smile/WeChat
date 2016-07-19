@@ -6,7 +6,10 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jface.dialogs.InputDialog;
+import javax.swing.text.StyledEditorKit.ForegroundAction;
+
+import oracle.net.aso.g;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.graphics.Color;
@@ -33,11 +36,8 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 import com.yc.weichat.entity.Account;
+import com.yc.weichat.entity.Group;
 import com.yc.weichat.server.Properties;
-import com.yc.weichat.service.AccountService;
-import com.yc.weichat.service.FriendsService;
-import com.yc.weichat.service.impl.AccountServiceimpl;
-import com.yc.weichat.service.impl.FriendsServiceimpl;
 import com.yc.weichat.util.UIUtil;
 
 import static com.yc.weichat.util.ClientUtil.*;
@@ -48,8 +48,11 @@ public class MainView {
 	protected Shell shell;
 	private Text txtfind;
 	private Account acc, other;
+	private Group group, addgroup;
 	private List<Composite> list;
+	private List<Composite> groupComposites;
 	private List<Account> friends;
+	private List<Group> groups;
 	private Button btnChat, btnFriend, btnCollect, btnSetting;
 	private Text textChatRecord;
 	private Text textContent;
@@ -61,6 +64,9 @@ public class MainView {
 	Composite composite_14;
 	Composite composite_15;
 	Composite composite_16;
+	Composite composite_17;
+	Composite composite;
+	ScrolledComposite scrolledComposite_3, scrolledComposite_4, scrolledComposite;
 	
 	Label lblOther;
 	Label lbl_headPortait;
@@ -77,15 +83,16 @@ public class MainView {
 	Label lab_Pic;
 	Account addFriendAccount;
 	
+	boolean isPrivateChat = true;
 	public static String chatWays;
 	public static String otherId;
+	public static String groupId;
 	public static String sendMessage;
 	public static String receiveMessage;
-//	public Socket client;
-//	private boolean isRunning = true;
-//	private DataInputStream dis;
-//	private DataOutputStream dos;
-	
+	private Text textGroupId;
+	private Text textGroupName;
+	private Text textGroupId2;
+
 	/**
 	 * Launch the application.
 	 * @param args
@@ -96,7 +103,7 @@ public class MainView {
 			window.open();
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
+		} 
 	}
 
 	/**
@@ -123,12 +130,13 @@ public class MainView {
 		
 		shell = new Shell(SWT.MIN|SWT.CLOSE);
 		shell.setImage(SWTResourceManager.getImage(MainView.class, "/images/icon.jpg"));
-		shell.setSize(1150, 800);
+		shell.setSize(1035, 720);
 		winCenter(shell);
 		shell.setText("微信");
 		shell.setLayout(new FillLayout(SWT.HORIZONTAL));
 		
 		loadData();
+		
 		
 		SashForm sashForm = new SashForm(shell, SWT.NONE);
 		Image image2 = changeImage("images/press_message.png", 60, 60);
@@ -140,30 +148,30 @@ public class MainView {
 		composite_1.setBackground(new Color(shell.getDisplay(), 62,62,64));
 		
 		Button btnNewButton = new Button(composite_1, SWT.NONE);
-		btnNewButton.setBounds(0, 0, 60, 60);
+		btnNewButton.setBounds(0, 0, 55, 55);
 		btnNewButton.setImage(changeImage("images/not_pic.jpg", 60, 60));
 		if(acc.getPic() != null) {
 			btnNewButton.setImage(changeImage(acc.getPic(), 60, 60));
 		}
 		
 		btnChat = new Button(composite_1, SWT.NONE);
-		btnChat.setBounds(-1, 66, 60, 60);
+		btnChat.setBounds(-1, 66, 55, 55);
 		btnChat.setImage(image2);
 		
 		
 		btnFriend = new Button(composite_1, SWT.NONE);
-		btnFriend.setBounds(0, 136, 60, 60);
+		btnFriend.setBounds(0, 136, 55, 55);
 		btnFriend.setImage(image3);
 		
 		
 		
 		btnCollect = new Button(composite_1, SWT.NONE);
-		btnCollect.setBounds(0, 210, 60, 60);
+		btnCollect.setBounds(0, 210, 55, 55);
 		btnCollect.setImage(image4);
 		
 		
 		btnSetting = new Button(composite_1, SWT.NONE);
-		btnSetting.setBounds(0, 700, 60, 60);
+		btnSetting.setBounds(0, 609, 55, 55);
 		btnSetting.setImage(image5);
 		
 		Composite composite_2 = new Composite(sashForm, SWT.NONE);
@@ -177,7 +185,7 @@ public class MainView {
 		txtfind = new Text(composite_21, SWT.BORDER);
 		txtfind.setForeground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
 		txtfind.setText("请输入关键字");
-		txtfind.setBounds(10, 20, 209, 30);
+		txtfind.setBounds(10, 20, 172, 30);
 		
 		//文本焦点事件  提示语显示与关闭
 		txtfind.addFocusListener(new FocusAdapter() {
@@ -202,40 +210,16 @@ public class MainView {
 		});
 
 		
-		Button btnNewButton_5 = new Button(composite_21, SWT.NONE);
-		btnNewButton_5.setBounds(260, 15, 40, 40);
+		Button btnGroupManager = new Button(composite_21, SWT.NONE);
+		btnGroupManager.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				showRightComposite(composite_17);
+			}
+		});
+		btnGroupManager.setBounds(224, 15, 40, 40);
 		Image image6 = changeImage("images/add.png", 60, 60);
-		btnNewButton_5.setImage(image6);
-		
-		
-		
-		ScrolledComposite scrolledComposite = new ScrolledComposite(sashForm_1, SWT.BORDER | SWT.V_SCROLL);
-		scrolledComposite.setExpandHorizontal(true);
-		scrolledComposite.setExpandVertical(true);
-		
-		sLayout2 = new StackLayout();
-		Composite composite = new Composite(scrolledComposite, SWT.NONE);
-		composite.setLayout(sLayout2);
-		
-		composite_14 = new Composite(composite, SWT.NONE);
-		addPressEvent(btnChat, "images/press_message.png", composite_14);
-		
-		composite_15 = new Composite(composite, SWT.NONE);
-		addPressEvent(btnFriend, "images/press_friend.png", composite_15);
-		
-		
-		RowLayout rl_composite_15 = new RowLayout(SWT.VERTICAL);
-		composite_15.setLayout(rl_composite_15);
-		
-		
-		composite_16 = new Composite(composite, SWT.NONE);
-		addPressEvent(btnCollect, "images/press_collect.png", composite_16);
-		
-		showCenterComposite(composite_14);
-		
-		scrolledComposite.setContent(composite);
-		scrolledComposite.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-		sashForm_1.setWeights(new int[] {1, 12});
+		btnGroupManager.setImage(image6);
 		
 		Composite composite_3 = new Composite(sashForm, SWT.NONE);
 		composite_3.setEnabled(false);
@@ -248,8 +232,8 @@ public class MainView {
 		Composite composite_4 = new Composite(sashForm, SWT.NONE);
 		composite_4.setLayout(sLayout);
 		
-		
 		composite_5 = new Composite(composite_4, SWT.NONE);
+		sLayout.topControl = composite_5;
 		
 		composite_6 = new Composite(composite_4, SWT.NONE);
 		composite_6.setLayout(new FillLayout(SWT.HORIZONTAL));
@@ -271,7 +255,7 @@ public class MainView {
 		Composite composite_10 = new Composite(scrolledComposite_1, SWT.NONE);
 		composite_10.setLayout(new FillLayout(SWT.HORIZONTAL));
 		
-		textChatRecord = new Text(composite_10, SWT.BORDER | SWT.WRAP | SWT.H_SCROLL | SWT.CANCEL);
+		textChatRecord = new Text(composite_10, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
 		textChatRecord.setEditable(false);
 		scrolledComposite_1.setContent(composite_10);
 		scrolledComposite_1.setMinSize(composite_10.computeSize(SWT.DEFAULT, SWT.DEFAULT));
@@ -321,7 +305,7 @@ public class MainView {
 		Composite composite_9 = new Composite(sashForm_2, SWT.NONE);
 		
 		Button btnSend = new Button(composite_9, SWT.NONE);
-		btnSend.setBounds(672, 0, 80, 30);
+		btnSend.setBounds(560, 0, 92, 30);
 		btnSend.setImage(changeImage("images/send.png", 100, 40));
 		sashForm.setWeights(new int[] {5, 25, 1, 63});
 		
@@ -336,6 +320,26 @@ public class MainView {
 		
 		composite_13 = new Composite(composite_4, SWT.NONE);
 		composite_13.setVisible(false);
+		
+		composite = new Composite(sashForm_1, SWT.NONE);
+		sLayout2 = new StackLayout();
+		composite.setLayout(sLayout2);
+		
+		
+		scrolledComposite_3 = new ScrolledComposite(composite, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		scrolledComposite_3.setExpandHorizontal(true);
+		scrolledComposite_3.setExpandVertical(true);
+		
+		scrolledComposite_4 = new ScrolledComposite(composite, SWT.BORDER | SWT.V_SCROLL);
+		scrolledComposite_4.setExpandHorizontal(true);
+		scrolledComposite_4.setExpandVertical(true);
+		
+		addPressEvent(btnChat, "images/press_message.png", scrolledComposite_3);
+		
+		composite_15 = new Composite(scrolledComposite_4, SWT.NONE);
+		composite_15.setLayout(new RowLayout(SWT.HORIZONTAL));
+		scrolledComposite_4.setContent(composite_15);
+		scrolledComposite_4.setMinHeight((friends.size()+1) * 70);
 		
 		lbl_headPortait = new Label(composite_12, SWT.NONE);
 		lbl_headPortait.setBounds(291, 139, 200, 200);
@@ -400,7 +404,7 @@ public class MainView {
 		
 		lab_Pic = new Label(composite_13, SWT.NONE);
 		lab_Pic.setAlignment(SWT.CENTER);
-		lab_Pic.setBounds(283, 153, 200, 200);
+		lab_Pic.setBounds(248, 97, 200, 200);
 		lab_Pic.setImage(changeImage("images/not_pic.jpg", 200, 200));
 		
 		label_name = new Label(composite_13, SWT.NONE);
@@ -408,35 +412,35 @@ public class MainView {
 		label_name.setForeground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
 		label_name.setFont(SWTResourceManager.getFont("Microsoft YaHei UI", 13, SWT.NORMAL));
 		label_name.setAlignment(SWT.CENTER);
-		label_name.setBounds(264, 381, 250, 30);
+		label_name.setBounds(229, 325, 250, 30);
 		
 		Label label_5 = new Label(composite_13, SWT.NONE);
 		label_5.setText("微信号");
 		label_5.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
 		label_5.setEnabled(false);
 		label_5.setAlignment(SWT.CENTER);
-		label_5.setBounds(272, 445, 65, 30);
+		label_5.setBounds(237, 389, 65, 30);
 		
 		lab_friendId = new Label(composite_13, SWT.NONE);
 		lab_friendId.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
 		lab_friendId.setAlignment(SWT.CENTER);
-		lab_friendId.setBounds(343, 445, 200, 30);
+		lab_friendId.setBounds(308, 389, 200, 30);
 		
 		Label label_7 = new Label(composite_13, SWT.NONE);
 		label_7.setText("地区");
 		label_7.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
 		label_7.setEnabled(false);
-		label_7.setBounds(283, 536, 65, 30);
+		label_7.setBounds(248, 480, 65, 30);
 		
 		lab_friendAdress = new Label(composite_13, SWT.NONE);
 		lab_friendAdress.setText("未设置");
 		lab_friendAdress.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
 		lab_friendAdress.setAlignment(SWT.CENTER);
-		lab_friendAdress.setBounds(343, 536, 200, 30);
+		lab_friendAdress.setBounds(308, 480, 200, 30);
 		
 		Button but_addfriend = new Button(composite_13, SWT.NONE);
 		but_addfriend.setText("加好友");
-		but_addfriend.setBounds(264, 597, 250, 46);
+		but_addfriend.setBounds(229, 541, 250, 46);
 		addFriends(but_addfriend);
 		
 		Label label_2 = new Label(composite_13, SWT.NONE);
@@ -444,38 +448,126 @@ public class MainView {
 		label_2.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
 		label_2.setEnabled(false);
 		label_2.setAlignment(SWT.CENTER);
-		label_2.setBounds(272, 490, 65, 30);
+		label_2.setBounds(237, 434, 65, 30);
 		
 		lab_friendSex = new Label(composite_13, SWT.NONE);
 		lab_friendSex.setText("未设置");
 		lab_friendSex.setFont(SWTResourceManager.getFont("Microsoft Tai Le", 11, SWT.NORMAL));
 		lab_friendSex.setAlignment(SWT.CENTER);
-		lab_friendSex.setBounds(343, 490, 200, 30);
+		lab_friendSex.setBounds(308, 434, 200, 30);
 		
 
 		Button btn_find = new Button(composite_21, SWT.NONE);
 		btn_find.setImage(SWTResourceManager.getImage(MainView.class, "/images/find.png"));
-		btn_find.setBounds(224, 20, 30, 30);
+		btn_find.setBounds(188, 20, 30, 30);
 		addFriends_find(btn_find);
+		
+		
+		addPressEvent(btnFriend, "images/press_friend.png", scrolledComposite_4);
+			
+		composite_14 = new Composite(scrolledComposite_3, SWT.NONE);
+		
+		scrolledComposite = new ScrolledComposite(composite, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		scrolledComposite.setExpandHorizontal(true);
+		scrolledComposite.setExpandVertical(true);
+		scrolledComposite.setContent(composite_16);
+		addPressEvent(btnCollect, "images/press_collect.png", scrolledComposite);
+		
+		showCenterComposite(scrolledComposite);
+		
+		composite_16 = new Composite(scrolledComposite, SWT.NONE);
+		
+		
+		scrolledComposite_3.setContent(composite_14);
+		scrolledComposite_3.setMinHeight((groups.size()+1)*70);
+		composite_14.setLayout(new RowLayout(SWT.HORIZONTAL));
+
+		
+		
+		
+		sashForm_1.setWeights(new int[] {68, 593});
 		
 		Button btn_startchat = new Button(composite_12, SWT.NONE);
 		btn_startchat.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				showRightComposite(composite_6);
+				textChatRecord.setText("");
 				lblOther.setText(other.getUserId());
 				otherId = Properties.OTHER_ID.concat(lblOther.getText().trim());
 				sendMsg(otherId);
-				
+				isPrivateChat = true;
 			}
 		});
 		btn_startchat.setBounds(272, 583, 250, 46);
 		btn_startchat.setText("发消息");
 		
-		showRightComposite(composite_5);
+		composite_17 = new Composite(composite_4, SWT.NONE);
+		
+		
+		Label label = new Label(composite_17, SWT.NONE);
+		label.setText("创建讨论组");
+		label.setFont(SWTResourceManager.getFont("Microsoft YaHei UI", 15, SWT.NORMAL));
+		label.setBounds(10, 10, 186, 47);
+		
+		Label label_1 = new Label(composite_17, SWT.NONE);
+		label_1.setText("id");
+		label_1.setBounds(31, 130, 48, 24);
+		
+		Label label_3 = new Label(composite_17, SWT.NONE);
+		label_3.setText("name");
+		label_3.setBounds(31, 212, 48, 24);
+		
+		Label label_4 = new Label(composite_17, SWT.SEPARATOR);
+		label_4.setText("New Label");
+		label_4.setEnabled(false);
+		label_4.setBounds(312, 10, 30, 750);
+		
+		Label label_6 = new Label(composite_17, SWT.NONE);
+		label_6.setText("加入讨论组");
+		label_6.setFont(SWTResourceManager.getFont("Microsoft YaHei UI", 15, SWT.NORMAL));
+		label_6.setBounds(348, 10, 186, 47);
+		
+		textGroupId = new Text(composite_17, SWT.BORDER);
+		textGroupId.setBounds(101, 130, 195, 30);
+		
+		textGroupName = new Text(composite_17, SWT.BORDER);
+		textGroupName.setBounds(99, 212, 195, 30);
+		
+		Button btnCreate = new Button(composite_17, SWT.NONE);
+		btnCreate.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				String groupId = textGroupId.getText().trim();
+				String groupName = textGroupName.getText().trim();
+				sendMsg(Properties.CREATE_GROUP + "#" + groupId + "#" + groupName + "#" + acc.getUserId());
+			}
+		});
+		btnCreate.setBounds(182, 288, 114, 34);
+		btnCreate.setText("创建");
+		
+		textGroupId2 = new Text(composite_17, SWT.BORDER);
+		textGroupId2.setBounds(436, 127, 195, 30);
+		
+		Label label_8 = new Label(composite_17, SWT.NONE);
+		label_8.setText("id");
+		label_8.setBounds(372, 126, 48, 24);
+		
+		Button btnJoin = new Button(composite_17, SWT.NONE);
+		btnJoin.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				sendMsg(Properties.JOIN_GROUP + "#" + textGroupId2.getText().trim() + "#" + acc.getUserId());
+			}
+		});
+		btnJoin.setText("加入");
+		btnJoin.setBounds(517, 207, 114, 34);
+		
 		
 		listFriendInfo();
 		showFriendInfo();
+		listGroupInfo();
+		showGroupInfo();
 		
 		receive();
 	}
@@ -514,25 +606,244 @@ public class MainView {
 		} else if(receiveMessage.startsWith(Properties.NULL_ACCOUNT)) {
 			notFindAccount(receiveMessage);
 		} else if(receiveMessage.startsWith(Properties.ADD_FRIEND_SUCCESS)) {
-			addFriendSuccess(receiveMessage);
+			addFriendSuccess();
 		} else if(receiveMessage.startsWith(Properties.ADD_FRIEND_FAIL)) {
-			addFriendFail(receiveMessage);
+			addFriendFail();
+		} else if(receiveMessage.startsWith(Properties.CREATE_GROUP_SUCCESS)) {
+			createGroup();
+		} else if(receiveMessage.startsWith(Properties.CREATE_GROUP_FAIL)) {
+			createGroupFail();
+		} else if(receiveMessage.startsWith(Properties.JOIN_GROUP_SUCCESS)) {
+			joinGroupSuccess(receiveMessage);
+		} else if(receiveMessage.startsWith(Properties.JOIN_GROUP_FAIL)) {
+			joinGroupFail();
+		} else if(receiveMessage.startsWith(Properties.GROUP_CHAT)) {
+			groupChat(receiveMessage);
 		}
 	}
 	
-	private void addFriendFail(String receiveMessage2) {
+	private void groupChat(String msg) {
+		String[] str = msg.split("#");
+		String a = groupId;
+		if(a == null) {
+			a = "";
+		}
+		groupId = Properties.GROUP_ID.concat(str[1]);
+		sendMsg(groupId);
+		lblOther.setText(str[1]);
+		showRightComposite(composite_6);
+		if(a.equals(groupId)) {
+			textChatRecord.append(str[2] + ":  " + str[0].substring(Properties.GROUP_CHAT.length()) + "\r\n\r\n");
+		} else {
+			textChatRecord.setText(str[2] + ":  " + str[0].substring(Properties.GROUP_CHAT.length()) + "\r\n\r\n");
+		}
+		isPrivateChat = false;
+	}
+
+	private void joinGroupFail() {
+		MessageBox mb = new MessageBox(shell);
+		mb.setText("提示");
+		mb.setMessage("加入讨论组失败");
+		mb.open();
+		textGroupId2.setText("");
+	}
+
+	private void joinGroupSuccess(String msg) {
+		MessageBox mb = new MessageBox(shell);
+		mb.setText("提示");
+		mb.setMessage("加入讨论组成功");
+		mb.open();
+		String[] str = msg.split("#");
+		Group g = new Group();
+		g.setId(str[2]);
+		g.setName(str[3]);
+		g.setAdmin(str[4]);
+		groupList.add(g);
+		groups.add(g);
+		
+		Composite c = new Composite(composite_14, SWT.BORDER);
+		c.setLayout(null);
+		Label name = new Label(c, SWT.LEFT);
+		name.setBounds(0, 0, 225, 40);
+		name.setText(g.getName());
+		name.setFont(SWTResourceManager.getFont("Microsoft YaHei UI", 12, SWT.NORMAL));
+		Label id = new Label(c, SWT.LEFT);
+		id.setBounds(0, 45, 225, 25);
+		id.setText(g.getId());
+		groupComposites.add(c);
+		
+		c.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				group = g;
+				showRightComposite(composite_6);
+				sendMsg(Properties.GROUP_ID .concat(group.getId()));
+				isPrivateChat = false;
+				lblOther.setText(group.getId());
+				
+			}
+		});
+		name.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				group = g;
+				showRightComposite(composite_6);
+				sendMsg(Properties.GROUP_ID .concat(group.getId()));
+				isPrivateChat = false;
+				lblOther.setText(group.getId());
+			}
+
+		});
+		id.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				group = g;
+				showRightComposite(composite_6);
+				sendMsg(Properties.GROUP_ID .concat(group.getId()));
+				isPrivateChat = false;
+				lblOther.setText(group.getId());
+			}
+
+		});
+		scrolledComposite_3.setMinHeight((groups.size()+1) * 70);
+		composite_14.layout(true);
+	}
+
+	private void createGroupFail() {
+		MessageBox mb = new MessageBox(shell);
+		mb.setText("提示");
+		mb.setMessage("创建讨论组失败");
+		mb.open();
+	}
+
+	private void createGroup() {
+		String groupId = textGroupId.getText().trim();
+		String groupName = textGroupName.getText().trim();
+		addgroup = new Group(groupId, groupName, acc.getUserId());
+		groupList.add(addgroup);
+		groups.add(addgroup);
+		MessageBox mb = new MessageBox(shell);
+		mb.setText("提示");
+		mb.setMessage("创建讨论组成功");
+		mb.open();
+		addGroupComposite();
+	}
+
+	private void addFriendFail() {
 		MessageBox mBox=new MessageBox(shell);
 		mBox.setText("添加好友");
 		mBox.setMessage("已经是您的好友");
 		mBox.open();
 	}
 
-	private void addFriendSuccess(String receiveMessage2) {
+	private void addFriendSuccess() {
 		MessageBox mBox=new MessageBox(shell);
 		mBox.setText("添加好友");
 		mBox.setMessage("添加好友成功");
 		friends.add(addFriendAccount);
 		mBox.open();
+		addFriendComposite();
+	}
+	
+	private void addGroupComposite() {
+		Composite c = new Composite(composite_14, SWT.BORDER);
+		c.setLayout(null);
+		Label name = new Label(c, SWT.LEFT);
+		name.setBounds(0, 0, 225, 40);
+		name.setText(addgroup.getName());
+		name.setFont(SWTResourceManager.getFont("Microsoft YaHei UI", 12, SWT.NORMAL));
+		Label id = new Label(c, SWT.LEFT);
+		id.setBounds(0, 45, 225, 25);
+		id.setText(addgroup.getId());
+		groupComposites.add(c);
+		
+		c.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				group = addgroup;
+				showRightComposite(composite_6);
+				sendMsg(Properties.GROUP_ID .concat(group.getId()));
+				isPrivateChat = false;
+				lblOther.setText(group.getId());
+			}
+		});
+		name.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				group = addgroup;
+				showRightComposite(composite_6);
+				sendMsg(Properties.GROUP_ID .concat(group.getId()));
+				isPrivateChat = false;
+				lblOther.setText(group.getId());
+			}
+
+		});
+		id.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				group = addgroup;
+				showRightComposite(composite_6);
+				sendMsg(Properties.GROUP_ID .concat(group.getId()));
+				isPrivateChat = false;
+				lblOther.setText(group.getId());
+			}
+
+		});
+		scrolledComposite_3.setMinHeight((groups.size()+1) * 70);
+		composite_14.layout(true);
+	}
+
+	private void addFriendComposite() {
+		
+		Composite c = new Composite(composite_15, SWT.BORDER);
+		c.setLayout(null);
+		Label pic = new Label(c, SWT.NONE);
+		pic.setBounds(0, 0, 70, 70);
+		if(addFriendAccount.getPic() != null) {
+			try {
+				pic.setImage(changeImage(new FileInputStream(System.getProperty("user.dir") + 
+						"\\src\\images\\" + addFriendAccount.getUserId() + ".jpg"), 70, 70));
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			pic.setImage(changeImage("images/not_pic.jpg", 70, 70));
+		}
+		
+		Label name = new Label(c, SWT.NONE);
+		name.setBounds(90, 0, 165, 70);
+		name.setText(addFriendAccount.getUserId());
+		list.add(c);
+		friends.add(addFriendAccount);
+		
+		Label image = (Label) c.getChildren()[0];
+		Label userid = (Label)c.getChildren()[1];
+		c.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				other = addFriendAccount;
+				flushFriendInfo();
+			}
+		});
+		image.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				other = addFriendAccount;
+				flushFriendInfo();
+			}
+
+		});
+		userid.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				other = addFriendAccount;
+				flushFriendInfo();
+			}
+
+		});
+		scrolledComposite_4.setMinHeight((friends.size()+1) * 70);
+		composite_15.layout(true);
 		
 	}
 
@@ -575,13 +886,25 @@ public class MainView {
 //		}
 	}
 	
+	
 	private void privateChat(String msg) {
 		String[] str = msg.split("#");
-		String otherId = Properties.OTHER_ID.concat(str[1]);
+		String a = otherId;
+		if(a == null) {
+			a = "";
+		}
+		System.out.println(a);
+		otherId = Properties.OTHER_ID.concat(str[1]);
+		System.out.println(otherId);
 		sendMsg(otherId);
 		lblOther.setText(str[1]);
 		showRightComposite(composite_6);
-		textChatRecord.append(str[1] + ":  " + str[0].substring(Properties.PRIVATE_CHAT.length()) + "\r\n\r\n");
+		if(a.equals(otherId)) {
+			textChatRecord.append(str[1] + ":  " + str[0].substring(Properties.PRIVATE_CHAT.length()) + "\r\n\r\n");
+		} else {
+			textChatRecord.setText(str[1] + ":  " + str[0].substring(Properties.PRIVATE_CHAT.length()) + "\r\n\r\n");
+		}
+		isPrivateChat = true;
 	}
 	
 	private void showFriendInfo() {
@@ -596,9 +919,6 @@ public class MainView {
 					other = friends.get(count);
 					flushFriendInfo();
 				}
-
-				
-
 			});
 			image.addMouseListener(new MouseAdapter() {
 				@Override
@@ -660,8 +980,8 @@ public class MainView {
 		 */
 		sendMsg(Properties.REQUEST_FRIEND_LIST);
 		friendList = new ArrayList<Account>();
-		int size = Integer.parseInt(receiveMsg());
-		for(int i=0; i<size; i++) {
+		int friendSize = Integer.parseInt(receiveMsg());
+		for(int i=0; i<friendSize; i++) {
 			String msg = receiveMsg();
 			friendList.add(getAccount(msg));
 		}
@@ -679,12 +999,28 @@ public class MainView {
 			}
 			friends.add(account);
 		}
+		
+		/*
+		 * 获取群讨论组
+		 */
+		sendMsg(Properties.REQUEST_GROUP_LIST);
+		groupList = new ArrayList<Group>();
+		int groupSize = Integer.parseInt(receiveMsg());
+		for(int i=0; i<groupSize; i++) {
+			String msg = receiveMsg();
+			groupList.add(getGroup(msg));
+		}
+		groups = new ArrayList<Group>();
+		for(Group g : groupList) {
+			groups.add(g);
+		}
 	}
 
 	/**
 	 * 列出朋友列表
 	 */
 	private void listFriendInfo() {
+		scrolledComposite_4.setMinHeight((friends.size()+1) * 70);
 		list = new ArrayList<Composite>();
 		for(int i=0; i<friends.size(); i++) {
 			other = friends.get(i);
@@ -705,28 +1041,98 @@ public class MainView {
 			}
 			
 			Label name = new Label(c, SWT.NONE);
-			name.setBounds(90, 0, 165, 70);
+			name.setBounds(90, 0, 135, 70);
 			name.setText(other.getUserId());
 	
 			list.add(c);
 		}		
 	}
-
-	private void showCenterComposite(Composite composite) {
-		sLayout2.topControl=composite;
-		composite_14.setVisible(false);
-		composite_15.setVisible(false);
-		composite_16.setVisible(false);
-		composite.setVisible(true);
+	
+	/**
+	 * 列出群信息
+	 */
+	private void listGroupInfo() {
+		scrolledComposite_3.setMinHeight((groups.size()+1)*70);
+		groupComposites = new ArrayList<Composite>();
+		for(int i=0; i<groups.size(); i++) {
+			group = groups.get(i);
+			Composite c = new Composite(composite_14, SWT.BORDER);
+			c.setLayout(null);
+			Label name = new Label(c, SWT.LEFT);
+			name.setBounds(0, 0, 225, 40);
+			name.setText(group.getName());
+			name.setFont(SWTResourceManager.getFont("Microsoft YaHei UI", 12, SWT.NORMAL));
+			Label id = new Label(c, SWT.LEFT);
+			id.setBounds(0, 45, 225, 25);
+			id.setText(group.getId());
+			groupComposites.add(c);
+			
+		}		
 	}
+	
+	/**
+	 * 展示群信息
+	 */
+	private void showGroupInfo() {
+		for(int i=0; i<groups.size(); i++) {
+			Composite c = groupComposites.get(i);
+			Label name = (Label) c.getChildren()[0];
+			Label id = (Label)c.getChildren()[1];
+			int count = i;
+			c.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseDown(MouseEvent e) {
+					group = groups.get(count);
+					showRightComposite(composite_6);
+					sendMsg(Properties.GROUP_ID .concat(group.getId()));
+					isPrivateChat = false;
+					lblOther.setText(group.getId());
+				}
+			});
+			id.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseDown(MouseEvent e) {
+					group = groups.get(count);
+					showRightComposite(composite_6);
+					sendMsg(Properties.GROUP_ID .concat(group.getId()));
+					isPrivateChat = false;
+					lblOther.setText(group.getId());
+				}
+
+			});
+			name.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseDown(MouseEvent e) {
+					group = groups.get(count);
+					showRightComposite(composite_6);
+					sendMsg(Properties.GROUP_ID .concat(group.getId()));
+					isPrivateChat = false;
+					lblOther.setText(group.getId());
+				}
+
+			});
+		}
+	}
+	
+	
+
+	private void showCenterComposite(ScrolledComposite sc) {
+		sLayout2.topControl = sc;
+		scrolledComposite_3.setVisible(false);
+		scrolledComposite_4.setVisible(false);
+		scrolledComposite.setVisible(false);
+		sc.setVisible(true);
+	}
+	
 
 	private void showRightComposite(Composite composite) {
-		sLayout.topControl=composite;
+		sLayout.topControl = composite;
 		composite_5.setVisible(false);
 		composite_6.setVisible(false);
 		composite_12.setVisible(false);
 		composite_13.setVisible(false);
-		composite.setVisible(true);	
+		composite_17.setVisible(false);
+		composite.setVisible(true);
 	}
 	
 	public void addSendEvent(final Button btn) {
@@ -741,9 +1147,19 @@ public class MainView {
 			public void mouseUp(MouseEvent e) {
 				Button b = (Button)e.widget;
 				b.setImage(SWTResourceManager.getImage(UIUtil.class, "/images/send.png"));
-				
+				if(textContent.getText().trim().equals("")) {
+					MessageBox mb = new MessageBox(shell);
+					mb.setText("提示");
+					mb.setMessage("发送消息不能为空");
+					return;
+				}
 				sendMessage = textContent.getText().trim();
-				sendMsg(Properties.PRIVATE_CHAT.concat(sendMessage));
+				if(isPrivateChat) {
+					sendMsg(Properties.PRIVATE_CHAT.concat(sendMessage));
+				} else {
+					sendMsg(Properties.GROUP_CHAT.concat(sendMessage));
+				}
+				
 				textChatRecord.append("我:  " +sendMessage + "\r\n\r\n");
 				textContent.setText("");
 			}
@@ -763,7 +1179,7 @@ public class MainView {
 		});
 	}
 
-	private void addPressEvent(Button button, String path, Composite composite) {
+	private void addPressEvent(Button button, String path, ScrolledComposite sc) {
 		button.addSelectionListener(new SelectionAdapter() {
 
 			@Override
@@ -771,7 +1187,7 @@ public class MainView {
 				Button btn = (Button)e.widget;
 				setGrayBtn();
 				btn.setImage(changeImage(path, 60, 60));
-				showCenterComposite(composite);
+				showCenterComposite(sc);
 				showRightComposite(composite_5);
 			}
 			
@@ -816,32 +1232,5 @@ public class MainView {
 				
 			}
 		});
-	}
-	
-	public void flushFriend() {
-//		Composite c = new Composite(composite_15, SWT.BORDER);
-//		c.setLayout(null);
-//		Label pic = new Label(c, SWT.NONE);
-//		pic.setBounds(0, 0, 70, 70);
-//		if(addFriendAccount.getPic() != null) {
-//			pic.setImage(changeImage(addFriendAccount.getPic(), 70, 70));
-//		} else {
-//			pic.setImage(changeImage("images/not_pic.jpg", 70, 70));
-//		}
-//		
-//		Label name = new Label(c, SWT.NONE);
-//		name.setBounds(90, 0, 165, 70);
-//		name.setText(addFriendAccount.getUserId());
-//		list.add(c);
-//		composite_15.redraw();
-//		composite_15.update();
-//		shell.update();
-		
-//		list.clear();
-//		listFriendInfo();
-//		composite_15.redraw();
-//		composite_15.redraw();
-//		listFriendInfo();
-//		composite_15.update();
 	}
 }

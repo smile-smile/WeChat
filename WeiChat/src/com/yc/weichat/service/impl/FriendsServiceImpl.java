@@ -6,16 +6,16 @@ import java.util.List;
 import java.util.Map;
 
 import com.yc.weichat.dao.FriendsDao;
-import com.yc.weichat.dao.impl.FriendsDaoimpl;
+import com.yc.weichat.dao.impl.FriendsDaoImpl;
 import com.yc.weichat.entity.Account;
 import com.yc.weichat.service.FriendsService;
 
-public class FriendsServiceimpl implements FriendsService {
+public class FriendsServiceImpl implements FriendsService {
 	
     private FriendsDao friendsDao;
     
-    public FriendsServiceimpl(){
-    	friendsDao=new FriendsDaoimpl();
+    public FriendsServiceImpl(){
+    	friendsDao=new FriendsDaoImpl();
     }
     
 	public List<Account> listFriendsInfo(String myselfId) {

@@ -5,7 +5,7 @@ import java.util.Map;
 import com.yc.weichat.util.DBHelper;
 import com.yc.weichat.dao.FriendsDao;
 
-public class FriendsDaoimpl implements FriendsDao {
+public class FriendsDaoImpl implements FriendsDao {
 
 	public List<Map<String, Object>> selectFriends(String myselfId){
 		String sql="select * from Account where userId in(select friendId from Friends where myselfId=?)";
@@ -14,8 +14,12 @@ public class FriendsDaoimpl implements FriendsDao {
 
 	@Override
 	public int updateFriend(String myselfId, String friendId, String friendName) {
-		String sql = "insert into Friends values(?,?,?,null,null,null)";
-		return DBHelper.doUpdate(sql,myselfId,friendId,friendName);
+		if(!(myselfId.equals(friendId))) {
+			String sql = "insert into Friends values(?,?,?,null,null,null)";
+			return DBHelper.doUpdate(sql,myselfId,friendId,friendName);
+		} else {
+			return 0;
+		}
 	}
 
 }

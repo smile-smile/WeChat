@@ -5,16 +5,16 @@ import java.util.Map;
 
 import com.yc.weichat.util.Encrypt;
 import com.yc.weichat.dao.AccountDao;
-import com.yc.weichat.dao.impl.AccountDaoimpl;
+import com.yc.weichat.dao.impl.AccountDaoImpl;
 import com.yc.weichat.entity.Account;
 import com.yc.weichat.service.AccountService;
 
-public class AccountServiceimpl implements AccountService{
+public class AccountServiceImpl implements AccountService{
 	
 	private AccountDao loginDao;
 	
-	public AccountServiceimpl(){
-		loginDao=new AccountDaoimpl();
+	public AccountServiceImpl(){
+		loginDao=new AccountDaoImpl();
 	}
 	@Override
 	public Account login(String userId, String password) {

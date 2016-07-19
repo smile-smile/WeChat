@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import com.yc.weichat.entity.Account;
+import com.yc.weichat.entity.Group;
 import com.yc.weichat.server.Properties;
 
 public class ClientUtil {
@@ -82,5 +83,12 @@ public class ClientUtil {
 		return ac;
 	}
 	
-	
+	public static Group getGroup(String message) {
+		String[] str = message.split("#");
+		Group group = new Group();
+		group.setId(str[1]);
+		group.setName(str[2]);
+		group.setAdmin(str[3]);
+		return group;
+	}
 }

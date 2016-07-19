@@ -7,10 +7,13 @@ import java.net.Socket;
 import java.util.List;
 
 import com.yc.weichat.entity.Account;
+import com.yc.weichat.entity.Group;
 import com.yc.weichat.service.AccountService;
 import com.yc.weichat.service.FriendsService;
-import com.yc.weichat.service.impl.AccountServiceimpl;
-import com.yc.weichat.service.impl.FriendsServiceimpl;
+import com.yc.weichat.service.GroupService;
+import com.yc.weichat.service.impl.AccountServiceImpl;
+import com.yc.weichat.service.impl.FriendsServiceImpl;
+import com.yc.weichat.service.impl.GroupServiceImpl;
 import com.yc.weichat.util.CloseUtil;
 
 
@@ -18,7 +21,7 @@ public class MyChannel implements Runnable {
 	
 	private DataInputStream dis;
 	private DataOutputStream dos;
-	private String myId, otherId;
+	private String myId, otherId, groupId;
 	private boolean isRunning = true;
 	
     public MyChannel() {
@@ -87,20 +90,53 @@ public class MyChannel implements Runnable {
 			doLogin(msg);
 		} else if(msg.startsWith(Properties.REGISTER)) {
 			doRegister(msg);
-		} else if(msg.equals(Properties.REQUEST_FRIEND_LIST)) {
+		} else if(msg.startsWith(Properties.REQUEST_FRIEND_LIST)) {
 			doListFriendInfo();
+		} else if(msg.startsWith(Properties.REQUEST_GROUP_LIST)){
+			doListGroupInfo(msg);
 		} else if(msg.startsWith(Properties.ADD_FRIEND)) {
 			doAddFriend(msg);
 		} else if(msg.startsWith(Properties.FIND_ACCOUNT)) {
 			doFindAccount(msg);
-		} 
+		} else if(msg.startsWith(Properties.CREATE_GROUP)) {
+			doNewGroup(msg);
+		} else if(msg.startsWith(Properties.JOIN_GROUP)) {
+			doJoinGroup(msg);
+		} else if(msg.startsWith(Properties.GROUP_ID)) {
+			groupId = msg.substring(Properties.GROUP_ID.length());
+		}
 		
 	}
 	
 
+
+	
+	private void doJoinGroup(String msg) {
+		String[] str = msg.split("#");
+		GroupService gs = new GroupServiceImpl();
+		boolean isSuccess = gs.addGroup(str[1], str[2]);
+		if(isSuccess) {
+			String message = setGroupInfo(gs.getGroupInfo(str[1]));
+			sendMsg(Properties.JOIN_GROUP_SUCCESS + "#" + message);
+		} else {
+			sendMsg(Properties.JOIN_GROUP_FAIL);
+		}
+	}
+
+	private void doNewGroup(String msg) {
+		String[] str = msg.split("#");
+		GroupService gs = new GroupServiceImpl();
+		boolean isSuccess = (gs.newGroup(str[1], str[2], str[3]) && gs.addGroup(str[1], str[3]));
+		if(isSuccess) {
+			sendMsg(Properties.CREATE_GROUP_SUCCESS);
+		} else {
+			sendMsg(Properties.CREATE_GROUP_FAIL);
+		}
+	}
+
 	private void doFindAccount(String msg) {
 		String[] str = msg.split("#");
-		AccountService as = new AccountServiceimpl();
+		AccountService as = new AccountServiceImpl();
 		Account ac = as.findAccount(str[1]);
 		if(ac == null) {
 			sendMsg(Properties.NULL_ACCOUNT);
@@ -113,7 +149,7 @@ public class MyChannel implements Runnable {
 
 	private void doAddFriend(String msg) {
 		String[] str = msg.split("#");
-		FriendsService fs = new FriendsServiceimpl();
+		FriendsService fs = new FriendsServiceImpl();
 		boolean isSuccess = (fs.addFriend(str[1], str[2], str[3]) && fs.addFriend(str[2], str[1], str[4]));
 		if(isSuccess) {
 			sendMsg(Properties.ADD_FRIEND_SUCCESS);
@@ -123,12 +159,23 @@ public class MyChannel implements Runnable {
 	}
 
 	private void doListFriendInfo() {
-		FriendsService fs = new FriendsServiceimpl();
+		FriendsService fs = new FriendsServiceImpl();
 		List<Account> list = fs.listFriendsInfo(myId);
 		sendMsg(String.valueOf(list.size()));
 		for(int i=0; i<list.size(); i++) {
 			Account acc = list.get(i);
 			sendMsg(setAccountInfo(acc));
+		}
+	}
+	
+
+	private void doListGroupInfo(String msg) {
+		GroupService gs = new GroupServiceImpl();
+		List<Group> list = gs.listGroupInfo(myId);
+		sendMsg(String.valueOf(list.size()));
+		for(int i=0; i<list.size(); i++) {
+			Group g = list.get(i);
+			sendMsg(setGroupInfo(g));
 		}
 	}
 
@@ -150,7 +197,7 @@ public class MyChannel implements Runnable {
 		if(address.equals(Properties.NULL)) {
 			address = null;
 		}
-		AccountService as = new AccountServiceimpl();
+		AccountService as = new AccountServiceImpl();
 		Account acc = new Account();
 		acc.setUserId(userId);
 		acc.setPassword(password);
@@ -170,7 +217,7 @@ public class MyChannel implements Runnable {
 	private void doLogin(String msg) {
 		String[] str = msg.split("#");
 		myId = str[1];
-		AccountService as = new AccountServiceimpl();
+		AccountService as = new AccountServiceImpl();
 		Account acc = as.login(str[1], str[2]);
 		if(acc == null) {
 			sendMsg(Properties.NULL_ACCOUNT);
@@ -201,15 +248,31 @@ public class MyChannel implements Runnable {
 		}
 		if(acc.getAddress() != null) {
 			sb.append(acc.getAddress());
-		} else {
+		} else { 
 			sb.append(Properties.NULL);
 		}
 		return sb.toString();
 	}
+	
+	private String setGroupInfo(Group g) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(Properties.GROUP + "#");
+		sb.append(g.getId() + "#");
+		sb.append(g.getName() + "#");
+		sb.append(g.getAdmin());
+		return sb.toString();
+	}
 
 	private void groupChat(String msg) {
-	// TODO Auto-generated method stub
-	
+		GroupService gs = new GroupServiceImpl();
+		List<String> list =  gs.listGroupFriendsInfo(groupId);
+		list.remove(myId);
+		for(MyChannel other : Server.all) {
+			if(list.contains(other.myId)) {
+				other.sendMsg(msg.concat("#" + groupId + "#" + myId ));
+			}
+		}
+		
 	}
 
 	private void privateChat(String msg) {
